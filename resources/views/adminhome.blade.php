@@ -30,7 +30,7 @@
                                 <tr>
                                     <th>Kode Produk</th>
                                     <th>Nama</th>
-                                    <th>Harga</th>
+                                    <th>Harga/Kg</th>
                                     <th>Aksi</th>
                                 </tr>
                             </thead>

@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\ProdukController;
 use App\Http\Middleware\UserAccess;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\KeranjangController;
 
 // Halaman utama
 Route::get('/', function () {
@@ -36,3 +37,11 @@ Route::middleware(['auth'])->group(function () {
     // Route resource untuk produk yang akan otomatis menangani seluruh CRUD
     Route::resource('produk', ProdukController::class);
 });
+
+
+Route::get('/keranjang', [KeranjangController::class, 'index'])->name('keranjang.index');
+Route::post('/keranjang/store', [KeranjangController::class, 'store'])->name('keranjang.store');
+Route::post('/keranjang/update', [KeranjangController::class, 'update'])->name('keranjang.update');
+Route::post('/keranjang/remove', [KeranjangController::class, 'remove'])->name('keranjang.remove');
+Route::post('/keranjang/clear', [KeranjangController::class, 'clear'])->name('keranjang.clear');
+Route::get('/keranjang/checkout', [KeranjangController::class, 'checkout'])->name('keranjang.checkout');
