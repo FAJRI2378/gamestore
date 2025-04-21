@@ -1,3 +1,7 @@
+@php use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;@endphp
+
+
 @extends('layouts.app')
 
 @section('content')
@@ -6,14 +10,20 @@
         <div class="col-md-10">
             <div class="card shadow-lg">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0">Dashboard Produk Laundry</h4>
-                    <a href="{{ route('keranjang.index') }}" class="btn btn-warning position-relative">
-                        <i class="fa fa-shopping-cart"></i>
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-count">
-                            {{ session('cart') ? count(session('cart')) : 0 }}
-                        </span>
-                    </a>
+                    <h4 class="mb-0">Produk Laundry</h4>
+                    <div class="d-flex align-items-center gap-2">
+                        <a href="{{ route('transactions.index') }}" class="btn btn-light me-2">
+                            <i class="fa fa-history"></i> Riwayat
+                        </a>
+                        <a href="{{ route('keranjang.index') }}" class="btn btn-warning position-relative">
+                            <i class="fa fa-shopping-cart"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-count">
+                                {{ session('cart') ? count(session('cart')) : 0 }}
+                            </span>
+                        </a>
+                    </div>
                 </div>
+
                 <div class="card-body">
 
                     @if(session('success'))

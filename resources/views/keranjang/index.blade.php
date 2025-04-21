@@ -1,3 +1,6 @@
+@php use Illuminate\Support\Facades\Route; @endphp
+
+
 @extends('layouts.app')
 
 @section('content')
@@ -61,9 +64,10 @@
         <button class="btn btn-warning clear-cart">
             <i class="fa fa-trash"></i> Kosongkan Keranjang
         </button>
-        <a href="{{ route('keranjang.checkout') }}" class="btn btn-success checkout-btn">
+        <a href="{{ route('keranjang.checkout') }}" class="btn btn-success checkout-btn" id="btn-checkout">
             <i class="fa fa-credit-card"></i> Checkout
         </a>
+
         <a href="{{ route('home') }}" class="btn btn-secondary">
             <i class="fa fa-home"></i> Kembali ke Home
         </a>
@@ -78,6 +82,7 @@
 <!-- SweetAlert & Script AJAX -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+     const totalBelanja = @json($total ?? 0);
 document.addEventListener('DOMContentLoaded', function() {
     // Update jumlah produk dalam keranjang
     document.querySelectorAll('.quantity').forEach(input => {
@@ -104,6 +109,27 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(error => console.error('Error:', error));
         });
     });
+
+    // Konfirmasi sebelum Checkout
+    document.getElementById('btn-checkout')?.addEventListener('click', function(event) {
+    event.preventDefault();
+
+    Swal.fire({
+        title: "Lanjutkan ke Checkout?",
+        html: "Total belanja Anda: <strong>Rp " + totalBelanja.toLocaleString('id-ID') + "</strong><br>Pastikan semua produk sudah benar.",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonColor: "#28a745",
+        cancelButtonColor: "#6c757d",
+        confirmButtonText: "Ya, Checkout",
+        cancelButtonText: "Batal"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = this.href;
+        }
+    });
+});
+
 
     // Hapus item dari keranjang dengan SweetAlert
     document.querySelectorAll('.remove-item').forEach(button => {

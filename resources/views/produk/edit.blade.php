@@ -1,3 +1,5 @@
+@php use Illuminate\Support\Facades\Route; @endphp
+
 @extends('layouts.app')
 
 @section('content')
@@ -50,3 +52,5 @@
     </div>
 </div>
 @endsection
+
+

@@ -4,6 +4,12 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Produk;
+use App\Models\Transactions;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
+
+
+
 
 class KeranjangController extends Controller
 {
@@ -92,15 +98,30 @@ class KeranjangController extends Controller
     /**
      * Proses checkout (hanya simulasi)
      */
-    public function checkout()
-    {
-        $cart = session()->get('cart', []);
 
-        if (empty($cart)) {
-            return redirect()->route('keranjang.index')->with('error', 'Keranjang belanja kosong!');
-        }
-
-        session()->forget('cart'); // Kosongkan keranjang setelah checkout
-        return redirect()->route('keranjang.index')->with('success', 'Checkout berhasil! Terima kasih telah berbelanja.');
+public function checkout()
+{
+    $cart = session()->get('cart', []);
+    if (empty($cart)) {
+        return redirect()->route('keranjang.index')->with('error', 'Your cart is empty!');
     }
+
+    $total = 0;
+    foreach ($cart as $item) {
+        $total += $item['harga'] * $item['quantity'];
+    }
+
+    $transactions = Transactions::create([
+        'user_id' => auth()->id(),
+        'items' => json_encode($cart),
+        'total_harga' => $total,
+        'status' => 'pending',
+        'resi' => strtoupper(Str::random(10))
+    ]);
+
+    session()->forget('cart');
+
+    return redirect()->route('transactions.index')->with('success', 'Checkout successful! Waiting for approval.');
+}
+
 }
