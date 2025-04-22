@@ -1,6 +1,5 @@
 @php use Illuminate\Support\Facades\Route; @endphp
 
-
 @extends('layouts.app')
 
 @section('content')
@@ -8,16 +7,18 @@
     <div class="row justify-content-center">
         <div class="col-md-10">
             <div class="card shadow-lg">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h4 class="mb-0">Dashboard Produk</h4>
-                </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <a href="{{ route('produk.create') }}" class="btn btn-primary">
+                    <div>
+                        <a href="{{ route('transactions.history') }}" class="btn btn-secondary me-2">
+                            <i class="fa fa-history"></i> Riwayat Transaksi
+                        </a>
+                        <a href="{{ route('produk.create') }}" class="btn btn-light text-primary fw-bold">
                             + Tambah Produk
                         </a>
                     </div>
-
+                </div>
+                <div class="card-body">
                     @if(session('success'))
                         <div class="alert alert-success alert-dismissible fade show" role="alert">
                             {{ session('success') }}
@@ -44,12 +45,8 @@
                                     <td>{{ $produk->nama }}</td>
                                     <td>Rp {{ number_format($produk->harga, 0, ',', '.') }}</td>
                                     <td>
-                                        <a href="{{ route('produk.edit', $produk->id) }}" class="btn btn-warning btn-sm">
-                                            Edit
-                                        </a>
-                                        <button class="btn btn-danger btn-sm" onclick="confirmDelete({{ $produk->id }})">
-                                            Hapus
-                                        </button>
+                                        <a href="{{ route('produk.edit', $produk->id) }}" class="btn btn-warning btn-sm">Edit</a>
+                                        <button class="btn btn-danger btn-sm" onclick="confirmDelete({{ $produk->id }})">Hapus</button>
                                         <form id="delete-form-{{ $produk->id }}" action="{{ route('produk.destroy', $produk->id) }}" method="POST" style="display: none;">
                                             @csrf
                                             @method('DELETE')
