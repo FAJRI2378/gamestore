@@ -34,6 +34,7 @@
                                 <tr>
                                     <th>Kode Produk</th>
                                     <th>Nama</th>
+                                    <th>Kategori</th> {{-- Tambahan --}}
                                     <th>Harga/Kg</th>
                                     <th>Aksi</th>
                                 </tr>
@@ -43,6 +44,7 @@
                                 <tr>
                                     <td>{{ $produk->kode_produk }}</td>
                                     <td>{{ $produk->nama }}</td>
+                                    <td>{{ $produk->kategori->nama ?? 'Tidak ada' }}</td> {{-- Tambahan --}}
                                     <td>Rp {{ number_format($produk->harga, 0, ',', '.') }}</td>
                                     <td>
                                         <a href="{{ route('produk.edit', $produk->id) }}" class="btn btn-warning btn-sm">Edit</a>

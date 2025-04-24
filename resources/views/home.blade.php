@@ -1,7 +1,3 @@
-@php use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;@endphp
-
-
 @extends('layouts.app')
 
 @section('content')
@@ -34,6 +30,20 @@ use Illuminate\Support\Facades\Auth;@endphp
                             </button>
                         </div>
                     @endif
+
+                    {{-- Pencarian berdasarkan kategori --}}
+                    <div class="mb-3">
+                        <form action="{{ route('produk.index') }}" method="GET">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <input type="text" name="search" class="form-control" placeholder="Cari Kategori..." value="{{ request('search') }}">
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="submit" class="btn btn-primary w-100">Cari</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
 
                     @can('create', App\Models\Produk::class)
                         <div class="mb-3">

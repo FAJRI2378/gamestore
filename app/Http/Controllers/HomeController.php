@@ -5,35 +5,47 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Produk;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Kategori;
+
 
 class HomeController extends Controller
 {
     /**
      * Menampilkan halaman utama untuk user biasa.
-     */
-    public function index()
-    {
-        // Mengambil produk untuk semua pengguna
-        $produks = Produk::all();
+     */public function index(Request $request)
+{
+    if (Auth::check()) {
+        $user = Auth::user();
 
-        // Menampilkan tampilan berdasarkan role user
-        if (Auth::check()) {
-            $user = Auth::user();  // Mendapatkan user yang sedang login
+        if ($user->role == 'admin') {
+            return redirect()->route('admin.home');
+        } elseif ($user->role == 'manager') {
+            return redirect()->route('manager.home');
+        } else {
+            // Ambil semua kategori
+            $kategoris = Kategori::all();
 
-            // Menampilkan halaman berdasarkan role user
-            if ($user->role == 'admin') {
-                return redirect()->route('admin.home'); // Redirect ke halaman admin
-            } elseif ($user->role == 'manager') {
-                return redirect()->route('manager.home'); // Redirect ke halaman manager
-            } else {
-                return view('home', compact('produks')); // Halaman untuk user biasa
+            // Query produk
+            $produkQuery = Produk::query();
+
+            // Filter berdasarkan kategori jika ada
+            if ($request->filled('kategori_id')) {
+                $produkQuery->where('kategori_id', $request->kategori_id);
             }
-        }
 
-        // Jika user belum login, tampilkan halaman login
-        return redirect()->route('login');
+            // Filter berdasarkan pencarian jika ada
+            if ($request->filled('search')) {
+                $produkQuery->where('nama', 'like', '%' . $request->search . '%');
+            }
+
+            $produks = $produkQuery->get();
+
+            return view('home', compact('produks', 'kategoris'));
+        }
     }
 
+    return redirect()->route('login');
+}
     /**
      * Menampilkan halaman utama untuk admin.
      */

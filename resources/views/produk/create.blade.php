@@ -1,6 +1,5 @@
 @php use Illuminate\Support\Facades\Route; @endphp
 
-
 @extends('layouts.app')
 
 @section('content')
@@ -8,8 +7,11 @@
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card shadow-lg">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h4 class="mb-0">Tambah Produk</h4>
+                    <a href="{{ route('kategori.create') }}" class="btn btn-light text-primary fw-bold">
+                        + Tambah Kategori
+                    </a>
                 </div>
                 <div class="card-body">
 
@@ -45,13 +47,24 @@
                             <input type="number" name="harga" class="form-control" required min="0" placeholder="Masukkan harga produk">
                         </div>
 
+                        {{-- Kategori Produk --}}
+                        <div class="mb-3">
+                            <label for="kategori_id" class="form-label">Kategori</label>
+                            <select name="kategori_id" class="form-control" required>
+                                <option value="">-- Pilih Kategori --</option>
+                                @foreach($kategoris as $kategori)
+                                    <option value="{{ $kategori->id }}">{{ $kategori->nama }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
                         {{-- Tombol Submit --}}
                         <button type="submit" class="btn btn-success">
                             <i class="fa fa-save"></i> Simpan Produk
                         </button>
 
                         {{-- Tombol Kembali --}}
-                        <a href="{{ route('produk.index') }}" class="btn btn-secondary">
+                        <a href="{{ route('admin.home') }}" class="btn btn-secondary">
                             <i class="fa fa-arrow-left"></i> Kembali
                         </a>
                     </form>

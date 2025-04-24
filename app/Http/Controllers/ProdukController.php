@@ -3,65 +3,89 @@
 namespace App\Http\Controllers;
 
 use App\Models\Produk;
+use App\Models\Kategori;
 use Illuminate\Http\Request;
 
 class ProdukController extends Controller
 {
-    // Menampilkan daftar produk
-    public function index()
-    {
-        $produks = Produk::all();
-        return view('adminHome', compact('produks'));
+    // Menampilkan daftar produk dengan filter kategori dan pencarian
+    public function index(Request $request)
+{
+    $kategoris = Kategori::all(); // Ambil semua kategori untuk filter
+
+    $produkQuery = Produk::query();
+
+    // Pencarian berdasarkan kategori jika ada
+    if ($request->filled('search')) {
+        $produkQuery->whereHas('kategori', function ($query) use ($request) {
+            $query->where('nama', 'like', '%' . $request->search . '%');
+        });
     }
 
-    // Menampilkan halaman tambah produk
+    // Pagination (10 produk per halaman)
+    $produks = $produkQuery->paginate(10);
+
+    // Kirim data ke view
+    return view('home', compact('produks', 'kategoris'));
+}
+
+
+    // Menampilkan form tambah produk
     public function create()
     {
-        return view('produk.create');
+        $kategoris = Kategori::all();
+        return view('produk.create', compact('kategoris'));
     }
 
-    // Menyimpan produk baru ke database
+    // Simpan produk baru
     public function store(Request $request)
     {
         $request->validate([
             'kode_produk' => 'required|unique:produks',
             'nama' => 'required',
             'harga' => 'required|numeric',
+            'kategori_id' => 'required|exists:kategoris,id',
         ]);
 
         Produk::create($request->all());
 
-        return redirect()->route('produk.index')->with('success', 'Produk berhasil ditambahkan');
+        // Redirect ke admin.home setelah sukses tambah produk
+        return redirect()->route('admin.home')->with('success', 'Produk berhasil ditambahkan');
     }
 
-    // Menampilkan halaman edit produk
+    // Menampilkan form edit produk
     public function edit($id)
     {
         $produk = Produk::findOrFail($id);
-        return view('produk.edit', compact('produk'));
+        $kategoris = Kategori::all();
+
+        return view('produk.edit', compact('produk', 'kategoris'));
     }
 
-    // Memperbarui data produk
+    // Update data produk
     public function update(Request $request, $id)
     {
         $request->validate([
             'kode_produk' => 'required',
             'nama' => 'required',
             'harga' => 'required|numeric',
+            'kategori_id' => 'required|exists:kategoris,id',
         ]);
 
         $produk = Produk::findOrFail($id);
         $produk->update($request->all());
 
-        return redirect()->route('produk.index')->with('success', 'Produk berhasil diperbarui');
+        // Redirect ke admin.home setelah sukses update produk
+        return redirect()->route('admin.home')->with('success', 'Produk berhasil diperbarui');
     }
 
-    // Menghapus produk dari database
+    // Hapus produk
     public function destroy($id)
     {
         $produk = Produk::findOrFail($id);
         $produk->delete();
 
-        return redirect()->route('produk.index')->with('success', 'Produk berhasil dihapus');
+        // Redirect ke admin.home setelah sukses hapus produk
+        return redirect()->route('admin.home')->with('success', 'Produk berhasil dihapus');
     }
 }
