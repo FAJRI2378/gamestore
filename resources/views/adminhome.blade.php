@@ -1,5 +1,3 @@
-@php use Illuminate\Support\Facades\Route; @endphp
-
 @extends('layouts.app')
 
 @section('content')
@@ -22,9 +20,7 @@
                     @if(session('success'))
                         <div class="alert alert-success alert-dismissible fade show" role="alert">
                             {{ session('success') }}
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                     @endif
 
@@ -32,17 +28,23 @@
                         <table class="table table-bordered text-center">
                             <thead class="table-dark">
                                 <tr>
+                                    <th>Gambar</th>
                                     <th>Kode Produk</th>
                                     <th>Nama</th>
-                                    <th>Harga/Kg</th>
+                                    <th>Kategori</th>
+                                    <th>Harga</th>
                                     <th>Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($produks as $produk)
                                 <tr>
+                                    <td>
+                                        <img src="{{ asset('storage/'.$produk->image) }}" alt="{{ $produk->nama }}" class="img-fluid" style="width: 100px; height: auto;">
+                                    </td>
                                     <td>{{ $produk->kode_produk }}</td>
                                     <td>{{ $produk->nama }}</td>
+                                    <td>{{ $produk->kategori->name ?? 'Tidak ada kategori' }}</td>
                                     <td>Rp {{ number_format($produk->harga, 0, ',', '.') }}</td>
                                     <td>
                                         <a href="{{ route('produk.edit', $produk->id) }}" class="btn btn-warning btn-sm">Edit</a>
@@ -63,7 +65,6 @@
                             <p class="text-muted">Belum ada produk yang tersedia.</p>
                         </div>
                     @endif
-
                 </div>
             </div>
         </div>
@@ -90,4 +91,5 @@
         });
     }
 </script>
+
 @endsection

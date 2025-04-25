@@ -3,60 +3,83 @@
 namespace App\Http\Controllers;
 
 use App\Models\Produk;
+use App\Models\Kategori;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ProdukController extends Controller
 {
-    // Menampilkan daftar produk
-    public function index()
+    public function index(Request $request)
     {
+        $kategoris = Kategori::all();
+        // Coba tampilkan semua produk tanpa filter
         $produks = Produk::all();
-        return view('adminHome', compact('produks'));
+    
+        $user = $request->user();
+        if ($user && $user->role == 'admin') {
+            return view('adminhome', compact('produks', 'kategoris'));
+        }
+    
+        return view('home', compact('produks', 'kategoris'));
     }
+              
 
-    // Menampilkan halaman tambah produk
     public function create()
     {
-        return view('produk.create');
+        $kategoris = Kategori::all();
+        return view('produk.create', compact('kategoris'));
     }
 
-    // Menyimpan produk baru ke database
     public function store(Request $request)
     {
         $request->validate([
-            'kode_produk' => 'required|unique:produks',
+            'kode_produk' => 'required',
             'nama' => 'required',
             'harga' => 'required|numeric',
+            'kategori_id' => 'required|exists:kategoris,id',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
-        Produk::create($request->all());
+        $produk = new Produk();
+        $produk->kode_produk = $request->kode_produk;
+        $produk->nama = $request->nama;
+        $produk->harga = $request->harga;
+        $produk->kategori_id = $request->kategori_id;
 
-        return redirect()->route('produk.index')->with('success', 'Produk berhasil ditambahkan');
+        if ($request->hasFile('image')) {
+            $imageName = time() . '.' . $request->image->extension();
+            $request->image->move(public_path('images/products'), $imageName);
+            $produk->image = $imageName;
+        }
+
+        $produk->save();
+
+        return redirect()->route('produk.index')->with('success', 'Produk berhasil ditambahkan.');
     }
 
-    // Menampilkan halaman edit produk
     public function edit($id)
     {
         $produk = Produk::findOrFail($id);
-        return view('produk.edit', compact('produk'));
+        $kategoris = \App\Models\Kategori::all();
+        return view('produk.edit', compact('produk', 'kategoris'));
     }
 
-    // Memperbarui data produk
     public function update(Request $request, $id)
     {
         $request->validate([
             'kode_produk' => 'required',
             'nama' => 'required',
             'harga' => 'required|numeric',
+            'kategori_id' => 'required|exists:kategoris,id',
         ]);
 
         $produk = Produk::findOrFail($id);
-        $produk->update($request->all());
+        $produk->update($request->only(['kode_produk', 'nama', 'harga', 'kategori_id']));
 
         return redirect()->route('produk.index')->with('success', 'Produk berhasil diperbarui');
     }
 
-    // Menghapus produk dari database
+
     public function destroy($id)
     {
         $produk = Produk::findOrFail($id);

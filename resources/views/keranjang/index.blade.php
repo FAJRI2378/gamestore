@@ -31,7 +31,7 @@
                 <thead class="table-dark">
                     <tr>
                         <th>Nama Produk</th>
-                        <th>Harga/Kg</th>
+                        <th>Harga</th>
                         <th>Jumlah</th>
                         <th>Total</th>
                         <th>Aksi</th>

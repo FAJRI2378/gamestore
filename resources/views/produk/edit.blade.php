@@ -39,6 +39,22 @@
                             <label for="harga" class="form-label">Harga</label>
                             <input type="number" name="harga" class="form-control" value="{{ $produk->harga }}" required min="0">
                         </div>
+                        <div class="mb-3">
+                            <label for="image" class="form-label">Gambar Produk</label>
+                            <input type="file" name="image" class="form-control" accept="image/*">
+                        </div>
+                        <!-- Kategori -->
+                        <div class="mb-3">
+                            <label for="kategori_id" class="form-label">Kategori</label>
+                            <select name="kategori_id" class="form-select" required>
+                                <option value="">Pilih Kategori</option>
+                                @foreach($kategoris as $kategori)
+                                    <option value="{{ $kategori->id }}" {{ $produk->kategori_id == $kategori->id ? 'selected' : '' }}>
+                                        {{ $kategori->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
 
                         <button type="submit" class="btn btn-success">
                             <i class="fa fa-save"></i> Simpan Perubahan

@@ -2,7 +2,7 @@
 use Illuminate\Support\Facades\Auth;@endphp
 
 
-@extends('layouts.app')
+@extends('layouts.guest')
 
 @section('content')
 <div class="container">

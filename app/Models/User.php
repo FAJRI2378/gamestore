@@ -7,6 +7,9 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
+/**
+ * @property string $role
+ */
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
@@ -15,7 +18,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role', // Menggunakan 'role' bukan 'type'
+        'role',
     ];
 
     protected $hidden = [
@@ -27,12 +30,6 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    /**
-     * Cek apakah user memiliki role tertentu.
-     *
-     * @param string $role
-     * @return bool
-     */
     public function hasRole($role)
     {
         return $this->role === $role;

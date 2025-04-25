@@ -1,7 +1,7 @@
 @php use Illuminate\Support\Facades\Route; @endphp
 
 
-@extends('layouts.app')
+@extends('layouts.guest')
 
 @section('content')
 <div class="container">

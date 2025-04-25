@@ -1,110 +1,82 @@
-@php use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;@endphp
-
-
-@extends('layouts.app')
+@extends('layouts.user')
 
 @section('content')
 <div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-10">
-            <div class="card shadow-lg">
-                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0">Produk Laundry</h4>
-                    <div class="d-flex align-items-center gap-2">
-                        <a href="{{ route('transactions.index') }}" class="btn btn-light me-2">
-                            <i class="fa fa-history"></i> Riwayat
-                        </a>
-                        <a href="{{ route('keranjang.index') }}" class="btn btn-warning position-relative">
-                            <i class="fa fa-shopping-cart"></i>
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-count">
-                                {{ session('cart') ? count(session('cart')) : 0 }}
-                            </span>
-                        </a>
-                    </div>
-                </div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0">Produk</h4>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ route('transactions.index') }}" class="btn btn-light me-2">
+                <i class="fa fa-history"></i> Riwayat
+            </a>
+            <a href="{{ route('keranjang.index') }}" class="btn btn-warning position-relative">
+                <i class="fa fa-shopping-cart"></i>
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-count">
+                    {{ session('cart') ? count(session('cart')) : 0 }}
+                </span>
+            </a>
+        </div>
+    </div>
+
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @can('create', App\Models\Produk::class)
+        <div class="mb-3">
+            <a href="{{ route('produk.create') }}" class="btn btn-success">
+                <i class="fa fa-plus"></i> Tambah Produk
+            </a>
+        </div>
+    @endcan
+
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+        @forelse($produks as $produk)
+        <div class="col">
+            <div class="card shadow-sm">
+               <img src="{{ asset('images/products/'.$produk->image) }}" class="card-img-top" alt="{{ $produk->nama }}" onerror="this.src='{{ asset('images/default.png') }}'">
 
                 <div class="card-body">
-
-                    @if(session('success'))
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            {{ session('success') }}
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                    @endif
-
-                    @can('create', App\Models\Produk::class)
-                        <div class="mb-3">
-                            <a href="{{ route('produk.create') }}" class="btn btn-success">
-                                <i class="fa fa-plus"></i> Tambah Produk
-                            </a>
-                        </div>
-                    @endcan
-
-                    <div class="table-responsive">
-                        <table class="table table-bordered text-center">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>Nama</th>
-                                    <th>Harga/Kg</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($produks as $produk)
-                                <tr>
-                                    <td>{{ $produk->nama }}</td>
-                                    <td>Rp {{ number_format($produk->harga, 0, ',', '.') }}</td>
-                                    <td>
-                                        <button class="btn btn-primary add-to-cart" data-id="{{ $produk->id }}">
-                                            <i class="fa fa-cart-plus"></i> Beli
-                                        </button>
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="3" class="text-center text-muted">Belum ada produk yang tersedia.</td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Notifikasi sukses -->
-                    <div id="cart-message" class="alert alert-success mt-3 d-none">
-                        <i class="fa fa-check-circle"></i> Produk berhasil ditambahkan ke keranjang!
-                    </div>
-
+                    <h5 class="card-title">{{ $produk->nama }}</h5>
+                    <p class="card-text">Rp {{ number_format($produk->harga, 0, ',', '.') }}</p>
+                    <button class="btn btn-primary add-to-cart" data-id="{{ $produk->id }}">
+                        <i class="fa fa-cart-plus"></i> Beli
+                    </button>
                 </div>
             </div>
         </div>
+        @empty
+        <div class="col-12">
+            <div class="alert alert-info text-center">
+                Belum ada produk yang tersedia.
+            </div>
+        </div>
+        @endforelse
     </div>
 </div>
 
-<!-- SweetAlert & Script AJAX untuk menambahkan produk ke keranjang -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
+    const cartCount = document.getElementById('cart-count');
+
     document.querySelectorAll('.add-to-cart').forEach(button => {
-        button.addEventListener('click', function() {
-            let produkId = this.getAttribute('data-id');
+        button.addEventListener('click', function () {
+            const produkId = this.dataset.id;
 
             fetch("{{ route('keranjang.store') }}", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 },
                 body: JSON.stringify({ id: produkId, quantity: 1 })
             })
-            .then(response => response.json())
+            .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    document.getElementById('cart-count').innerText = data.totalItems;
-
-                    // SweetAlert notifikasi sukses
+                    cartCount.innerText = data.totalItems;
                     Swal.fire({
                         title: "Berhasil!",
                         text: "Produk telah ditambahkan ke keranjang.",
@@ -112,12 +84,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         timer: 1500,
                         showConfirmButton: false
                     });
+                } else {
+                    Swal.fire("Gagal", "Terjadi kesalahan saat menambahkan ke keranjang.", "error");
                 }
             })
-            .catch(error => console.error('Error:', error));
+            .catch(() => {
+                Swal.fire("Error", "Terjadi kesalahan jaringan.", "error");
+            });
         });
     });
 });
 </script>
-
 @endsection
