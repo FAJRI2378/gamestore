@@ -1,70 +1,74 @@
-@php use Illuminate\Support\Facades\Route; @endphp
-
 @extends('layouts.app')
 
 @section('content')
 <div class="container">
     <div class="row justify-content-center">
-        <div class="col-md-10">
-            <div class="card shadow-lg">
-                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0">Dashboard Produk</h4>
-                    <div>
-                        <a href="{{ route('transactions.history') }}" class="btn btn-secondary me-2">
-                            <i class="fa fa-history"></i> Riwayat Transaksi
+        <div class="col-md-11">
+            <div class="card shadow-lg rounded-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center rounded-top">
+                    <h4 class="mb-0">
+                        <i class="fa fa-boxes me-2"></i> Dashboard Produk
+                    </h4>
+                    <div class="btn-group">
+                        <a href="{{ route('transactions.history') }}" class="btn btn-outline-light">
+                            <i class="fa fa-history me-1"></i> Riwayat Transaksi
+                        </a>
+                        <a href="{{ route('kategori.index') }}" class="btn btn-outline-light">
+                            <i class="fa fa-list me-1"></i> Kelola Kategori
                         </a>
                         <a href="{{ route('produk.create') }}" class="btn btn-light text-primary fw-bold">
-                            + Tambah Produk
+                            <i class="fa fa-plus-circle"></i> Tambah Produk
                         </a>
                     </div>
                 </div>
                 <div class="card-body">
+
                     @if(session('success'))
                         <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            {{ session('success') }}
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
+                            <i class="fa fa-check-circle me-1"></i> {{ session('success') }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                     @endif
 
                     <div class="table-responsive">
-                        <table class="table table-bordered text-center">
+                        <table class="table table-hover align-middle text-center">
                             <thead class="table-dark">
                                 <tr>
                                     <th>Kode Produk</th>
                                     <th>Nama</th>
-                                    <th>Kategori</th> {{-- Tambahan --}}
+                                    <th>Kategori</th>
                                     <th>Harga/Kg</th>
-                                    <th>Aksi</th>
+                                    <th style="width: 160px;">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($produks as $produk)
+                                @forelse($produks as $produk)
                                 <tr>
                                     <td>{{ $produk->kode_produk }}</td>
                                     <td>{{ $produk->nama }}</td>
-                                    <td>{{ $produk->kategori->nama ?? 'Tidak ada' }}</td> {{-- Tambahan --}}
+                                    <td>{{ $produk->kategori->nama ?? 'Tidak ada' }}</td>
                                     <td>Rp {{ number_format($produk->harga, 0, ',', '.') }}</td>
                                     <td>
-                                        <a href="{{ route('produk.edit', $produk->id) }}" class="btn btn-warning btn-sm">Edit</a>
-                                        <button class="btn btn-danger btn-sm" onclick="confirmDelete({{ $produk->id }})">Hapus</button>
+                                        <a href="{{ route('produk.edit', $produk->id) }}" class="btn btn-sm btn-warning me-2">
+                                            <i class="fa fa-edit"></i>
+                                        </a>
+                                        <button class="btn btn-sm btn-danger" onclick="confirmDelete({{ $produk->id }}, '{{ $produk->nama }}')">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
                                         <form id="delete-form-{{ $produk->id }}" action="{{ route('produk.destroy', $produk->id) }}" method="POST" style="display: none;">
                                             @csrf
                                             @method('DELETE')
                                         </form>
                                     </td>
                                 </tr>
-                                @endforeach
+                                @empty
+                                <tr>
+                                    <td colspan="5" class="text-muted text-center">Belum ada produk yang tersedia.</td>
+                                </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>
-
-                    @if($produks->isEmpty())
-                        <div class="text-center">
-                            <p class="text-muted">Belum ada produk yang tersedia.</p>
-                        </div>
-                    @endif
 
                 </div>
             </div>
@@ -75,14 +79,14 @@
 <!-- SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    function confirmDelete(id) {
+    function confirmDelete(id, namaProduk) {
         Swal.fire({
-            title: "Hapus Produk?",
+            title: `Hapus produk "${namaProduk}"?`,
             text: "Produk yang dihapus tidak dapat dikembalikan!",
             icon: "warning",
             showCancelButton: true,
             confirmButtonColor: "#d33",
-            cancelButtonColor: "#3085d6",
+            cancelButtonColor: "#6c757d",
             confirmButtonText: "Ya, Hapus!",
             cancelButtonText: "Batal"
         }).then((result) => {
@@ -91,5 +95,15 @@
             }
         });
     }
+
+    @if(session('success'))
+    Swal.fire({
+        title: 'Berhasil!',
+        text: '{{ session("success") }}',
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false
+    });
+    @endif
 </script>
 @endsection

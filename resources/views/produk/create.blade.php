@@ -9,9 +9,7 @@
             <div class="card shadow-lg">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h4 class="mb-0">Tambah Produk</h4>
-                    <a href="{{ route('kategori.create') }}" class="btn btn-light text-primary fw-bold">
-                        + Tambah Kategori
-                    </a>
+
                 </div>
                 <div class="card-body">
 

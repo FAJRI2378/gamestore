@@ -17,8 +17,7 @@ Route::get('/', function () {
 // =============================
 // Autentikasi
 // =============================
-// Jika kamu menggunakan Laravel UI:
-Auth::routes(); // Pastikan kamu sudah install laravel/ui
+Auth::routes(); // Laravel UI auth
 
 // =============================
 // Dashboard berdasarkan role
@@ -54,13 +53,14 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/transactions/history', [TransactionsController::class, 'history'])->name('transactions.history');
     Route::get('/transactions/print/{id}', [TransactionsController::class, 'print'])->name('transactions.print');
     Route::get('/transactions/{id}/receipt', [TransactionsController::class, 'printReceipt'])->name('transactions.receipt');
-
     Route::put('/transactions/{id}/updatestatus', [TransactionsController::class, 'updateStatus'])->name('transactions.updateStatus');
 
-
-    // Kategori Routes
-Route::get('/kategori', [KategoriController::class, 'index'])->name('kategori.index');
-Route::get('/kategori/create', [KategoriController::class, 'create'])->name('kategori.create');
-Route::post('/kategori', [KategoriController::class, 'store'])->name('kategori.store');
+    // Kategori (CRUD)
+    Route::get('/kategori', [KategoriController::class, 'index'])->name('kategori.index');
+    Route::get('/kategori/create', [KategoriController::class, 'create'])->name('kategori.create');
+    Route::post('/kategori', [KategoriController::class, 'store'])->name('kategori.store');
+    Route::get('/kategori/{kategori}/edit', [KategoriController::class, 'edit'])->name('kategori.edit');
+    Route::put('/kategori/{kategori}', [KategoriController::class, 'update'])->name('kategori.update');
+    Route::delete('/kategori/{kategori}', [KategoriController::class, 'destroy'])->name('kategori.destroy');
 
 });

@@ -7,26 +7,57 @@ use Illuminate\Http\Request;
 
 class KategoriController extends Controller
 {
-    // Menampilkan form untuk menambah kategori
+    // Menampilkan semua kategori
+    public function index()
+    {
+        $kategoris = Kategori::latest()->paginate(10);
+        return view('kategori.index', compact('kategoris'));
+    }
+
+    // Menampilkan form tambah kategori
     public function create()
     {
-        return view('kategori.create');  // Pastikan ada view kategori.create
+        return view('kategori.create');
     }
 
     // Menyimpan kategori ke database
     public function store(Request $request)
     {
-        // Validasi form
         $request->validate([
             'nama' => 'required|string|max:255',
         ]);
 
-        // Menyimpan kategori ke database
         Kategori::create([
             'nama' => $request->nama,
         ]);
 
-        // Mengarahkan pengguna ke halaman admin.home setelah berhasil menambahkan kategori
-        return redirect()->route('admin.home')->with('success', 'Kategori berhasil ditambahkan!');
+        return redirect()->route('kategori.index')->with('success', 'Kategori berhasil ditambahkan!');
+    }
+
+    // Menampilkan form edit kategori
+    public function edit(Kategori $kategori)
+    {
+        return view('kategori.edit', compact('kategori'));
+    }
+
+    // Menyimpan perubahan kategori ke database
+    public function update(Request $request, Kategori $kategori)
+    {
+        $request->validate([
+            'nama' => 'required|string|max:255',
+        ]);
+
+        $kategori->update([
+            'nama' => $request->nama,
+        ]);
+
+        return redirect()->route('kategori.index')->with('success', 'Kategori berhasil diperbarui!');
+    }
+
+    // Menghapus kategori
+    public function destroy(Kategori $kategori)
+    {
+        $kategori->delete();
+        return redirect()->route('kategori.index')->with('success', 'Kategori berhasil dihapus!');
     }
 }
