@@ -34,6 +34,7 @@
                         <table class="table table-hover align-middle text-center">
                             <thead class="table-dark">
                                 <tr>
+                                    <th>Gambar</th> <!-- Tambahan -->
                                     <th>Kode Produk</th>
                                     <th>Nama</th>
                                     <th>Kategori</th>
@@ -41,9 +42,18 @@
                                     <th style="width: 160px;">Aksi</th>
                                 </tr>
                             </thead>
+
                             <tbody>
                                 @forelse($produks as $produk)
                                 <tr>
+                                    <td>
+                                        @if($produk->image)
+                                            <img src="{{ asset('storage/images_produk/' . $produk->image) }}" alt="Gambar" width="80" class="rounded-3">
+                                        @else
+                                            <img src="{{ asset('storage/images_produk/default.png') }}" alt="Default Gambar" width="80" class="rounded-3">
+                                        @endif
+                                        <div>{{ $produk->nama }}</div>
+                                    </td>
                                     <td>{{ $produk->kode_produk }}</td>
                                     <td>{{ $produk->nama }}</td>
                                     <td>{{ $produk->kategori->nama ?? 'Tidak ada' }}</td>
@@ -63,10 +73,11 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="5" class="text-muted text-center">Belum ada produk yang tersedia.</td>
+                                    <td colspan="6" class="text-muted text-center">Belum ada produk yang tersedia.</td>
                                 </tr>
                                 @endforelse
                             </tbody>
+
                         </table>
                     </div>
 

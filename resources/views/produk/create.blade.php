@@ -9,7 +9,6 @@
             <div class="card shadow-lg">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h4 class="mb-0">Tambah Produk</h4>
-
                 </div>
                 <div class="card-body">
 
@@ -24,7 +23,7 @@
                     @endif
 
                     {{-- Form --}}
-                    <form action="{{ route('produk.store') }}" method="POST">
+                    <form action="{{ route('produk.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
 
                         {{-- Kode Produk --}}
@@ -56,6 +55,17 @@
                             </select>
                         </div>
 
+                        {{-- Upload Gambar --}}
+                        <div class="mb-3">
+                            <label for="image" class="form-label">Gambar Produk</label>
+                            <input type="file" name="image" class="form-control" accept="image/*" onchange="previewImage(event)">
+
+                            {{-- Preview Gambar --}}
+                            <div class="mt-3" id="image-preview-container">
+                                <img id="preview-image" src="#" alt="Preview Gambar" class="img-thumbnail d-none" width="150">
+                            </div>
+                        </div>
+
                         {{-- Tombol Submit --}}
                         <button type="submit" class="btn btn-success">
                             <i class="fa fa-save"></i> Simpan Produk
@@ -72,4 +82,18 @@
         </div>
     </div>
 </div>
+
+<script>
+    // Fungsi untuk pratinjau gambar yang dipilih oleh pengguna
+    function previewImage(event) {
+        const reader = new FileReader();
+        reader.onload = function () {
+            const preview = document.getElementById('preview-image');
+            preview.src = reader.result;
+            preview.classList.remove('d-none');  // Menampilkan gambar pratinjau
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    }
+</script>
+
 @endsection

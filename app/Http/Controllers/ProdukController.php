@@ -5,30 +5,30 @@ namespace App\Http\Controllers;
 use App\Models\Produk;
 use App\Models\Kategori;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ProdukController extends Controller
 {
-    // Menampilkan daftar produk dengan filter kategori dan pencarian
+    // Menampilkan daftar produk dengan filter pencarian
     public function index(Request $request)
-{
-    $kategoris = Kategori::all(); // Ambil semua kategori untuk filter
+    {
+        $kategoris = Kategori::all();
+        $produkQuery = Produk::query();
 
-    $produkQuery = Produk::query();
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $produkQuery->where(function ($query) use ($search) {
+                $query->where('nama', 'like', '%' . $search . '%')
+                      ->orWhereHas('kategori', function ($q) use ($search) {
+                          $q->where('nama', 'like', '%' . $search . '%');
+                      });
+            });
+        }
 
-    // Pencarian berdasarkan kategori jika ada
-    if ($request->filled('search')) {
-        $produkQuery->whereHas('kategori', function ($query) use ($request) {
-            $query->where('nama', 'like', '%' . $request->search . '%');
-        });
+        $produks = $produkQuery->paginate(10);
+
+        return view('home', compact('produks', 'kategoris'));
     }
-
-    // Pagination (10 produk per halaman)
-    $produks = $produkQuery->paginate(10);
-
-    // Kirim data ke view
-    return view('home', compact('produks', 'kategoris'));
-}
-
 
     // Menampilkan form tambah produk
     public function create()
@@ -37,7 +37,7 @@ class ProdukController extends Controller
         return view('produk.create', compact('kategoris'));
     }
 
-    // Simpan produk baru
+    // Menyimpan produk baru
     public function store(Request $request)
     {
         $request->validate([
@@ -45,47 +45,95 @@ class ProdukController extends Controller
             'nama' => 'required',
             'harga' => 'required|numeric',
             'kategori_id' => 'required|exists:kategoris,id',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        Produk::create($request->all());
+        $data = $request->only('kode_produk', 'nama', 'harga', 'kategori_id');
 
-        // Redirect ke admin.home setelah sukses tambah produk
-        return redirect()->route('admin.home')->with('success', 'Produk berhasil ditambahkan');
+        if ($request->hasFile('image')) {
+            $data['image'] = $this->uploadImage($request->file('image'));
+        }
+
+        Produk::create($data);
+
+        return redirect()->route('admin.home')->with('success', 'Produk berhasil ditambahkan!');
     }
 
-    // Menampilkan form edit produk
+    // Upload gambar
+    private function uploadImage($file)
+    {
+        $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+        $folderPath = 'public/images_produk';
+
+        if (!Storage::exists($folderPath)) {
+            Storage::makeDirectory($folderPath);
+        }
+
+        $file->storeAs($folderPath, $filename);
+        return $filename;
+    }
+
+    // Form edit produk
     public function edit($id)
     {
         $produk = Produk::findOrFail($id);
         $kategoris = Kategori::all();
-
         return view('produk.edit', compact('produk', 'kategoris'));
     }
 
-    // Update data produk
-    public function update(Request $request, $id)
+    // Update produk
+    public function update(Request $request, Produk $produk)
     {
         $request->validate([
-            'kode_produk' => 'required',
-            'nama' => 'required',
+            'nama' => 'required|string|max:255',
             'harga' => 'required|numeric',
-            'kategori_id' => 'required|exists:kategoris,id',
+            'kategori_id' => 'nullable|exists:kategoris,id',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $produk = Produk::findOrFail($id);
-        $produk->update($request->all());
+        $data = $request->only('nama', 'harga', 'kategori_id');
 
-        // Redirect ke admin.home setelah sukses update produk
-        return redirect()->route('admin.home')->with('success', 'Produk berhasil diperbarui');
+        if ($request->hasFile('image')) {
+            if ($produk->image && Storage::exists('public/images_produk/' . $produk->image)) {
+                Storage::delete('public/images_produk/' . $produk->image);
+            }
+            $data['image'] = $this->uploadImage($request->file('image'));
+        }
+
+        $produk->update($data);
+
+        return redirect()->route('admin.home')->with('success', 'Produk berhasil diperbarui!');
     }
 
     // Hapus produk
-    public function destroy($id)
+    public function destroy(Produk $produk)
     {
-        $produk = Produk::findOrFail($id);
+        if ($produk->image && Storage::exists('public/images_produk/' . $produk->image)) {
+            Storage::delete('public/images_produk/' . $produk->image);
+        }
+
         $produk->delete();
 
-        // Redirect ke admin.home setelah sukses hapus produk
-        return redirect()->route('admin.home')->with('success', 'Produk berhasil dihapus');
+        return redirect()->route('admin.home')->with('success', 'Produk berhasil dihapus!');
+    }
+
+    // AJAX Live Search
+    public function liveSearch(Request $request)
+{
+    $search = $request->get('search');
+    $produks = Produk::where('nama', 'like', "%$search%")
+        ->orWhereHas('kategori', function ($query) use ($search) {
+            $query->where('nama', 'like', "%$search%");
+        })
+        ->limit(10)
+        ->get();
+
+    return view('partials.search_results', compact('produks'));
+}
+
+    // Tambahan untuk Route::resource agar tidak error
+    public function show($id)
+    {
+        return redirect()->route('produk.index');
     }
 }

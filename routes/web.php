@@ -63,4 +63,7 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/kategori/{kategori}', [KategoriController::class, 'update'])->name('kategori.update');
     Route::delete('/kategori/{kategori}', [KategoriController::class, 'destroy'])->name('kategori.destroy');
 
+   // Gunakan hanya method yang kamu perlukan
+Route::get('/produk/live-search', [ProdukController::class, 'liveSearch'])->name('produk.live-search');
+
 });
