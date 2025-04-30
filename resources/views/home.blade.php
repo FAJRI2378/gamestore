@@ -1,4 +1,8 @@
-@extends('layouts.user')
+@php use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;@endphp
+
+
+@extends('layouts.app')
 
 @section('content')
 <div class="container">
@@ -17,12 +21,14 @@
         </div>
     </div>
 
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
+                    @if(session('success'))
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            {{ session('success') }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    @endif
 
     @can('create', App\Models\Produk::class)
         <div class="mb-3">

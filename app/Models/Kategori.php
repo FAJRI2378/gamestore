@@ -1,7 +1,5 @@
 <?php
 
-// app/Models/Kategori.php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -11,12 +9,12 @@ class Kategori extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name'];
+    // Pastikan field 'nama' sesuai tabel database
+    protected $fillable = ['nama'];
 
-    // Relasi ke Produk
+    // Relasi One-to-Many: Satu Kategori memiliki banyak Produk
     public function produks()
     {
         return $this->hasMany(Produk::class);
     }
 }
-

@@ -56,10 +56,22 @@
                             </select>
                         </div>
 
+                        <div class="mb-3">
+                            <label for="kategori_id" class="form-label">Kategori</label>
+                            <select name="kategori_id" class="form-control" required>
+                                <option value="">-- Pilih Kategori --</option>
+                                @foreach($kategoris as $kategori)
+                                    <option value="{{ $kategori->id }}" {{ $produk->kategori_id == $kategori->id ? 'selected' : '' }}>
+                                        {{ $kategori->nama }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
                         <button type="submit" class="btn btn-success">
                             <i class="fa fa-save"></i> Simpan Perubahan
                         </button>
-                        <a href="{{ route('produk.index') }}" class="btn btn-secondary">Kembali</a>
+                        <a href="{{ route('admin.home') }}" class="btn btn-secondary">Kembali</a>
                     </form>
 
                 </div>
@@ -68,5 +80,3 @@
     </div>
 </div>
 @endsection
-
-

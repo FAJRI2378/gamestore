@@ -7,6 +7,7 @@ use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\KeranjangController;
 use App\Http\Controllers\TransactionsController;
+use App\Http\Controllers\KategoriController;
 
 // Halaman Utama
 Route::get('/', function () {
@@ -55,5 +56,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/transactions/{id}/receipt', [TransactionsController::class, 'printReceipt'])->name('transactions.receipt');
 
     Route::put('/transactions/{id}/updatestatus', [TransactionsController::class, 'updateStatus'])->name('transactions.updateStatus');
+
+
+    // Kategori Routes
+Route::get('/kategori', [KategoriController::class, 'index'])->name('kategori.index');
+Route::get('/kategori/create', [KategoriController::class, 'create'])->name('kategori.create');
+Route::post('/kategori', [KategoriController::class, 'store'])->name('kategori.store');
 
 });
