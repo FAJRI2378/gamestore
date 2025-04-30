@@ -1,7 +1,3 @@
-@php
-    use Illuminate\Support\Facades\Route;
-@endphp
-
 @extends('layouts.app')
 
 @section('content')
@@ -21,6 +17,7 @@
                         </div>
                     @endif
 
+                    {{-- Form Tambah Produk --}}
                     <form action="{{ route('produk.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
 
@@ -39,11 +36,18 @@
                             <input type="number" name="harga" id="harga" class="form-control" required min="0">
                         </div>
 
+                        {{-- Upload Gambar --}}
                         <div class="mb-3">
                             <label for="image" class="form-label">Gambar Produk</label>
-                            <input type="file" name="image" id="image" class="form-control" accept="image/*">
+                            <input type="file" name="image" class="form-control" accept="image/*" onchange="previewImage(event)">
+                            
+                            {{-- Preview Gambar --}}
+                            <div class="mt-3" id="image-preview-container">
+                                <img id="preview-image" src="#" alt="Preview Gambar" class="img-thumbnail d-none" width="150">
+                            </div>
                         </div>
 
+                        {{-- Pilih Kategori --}}
                         <div class="mb-3">
                             <label for="kategori_id" class="form-label">Kategori</label>
                             <select name="kategori_id" id="kategori_id" class="form-select" required>
@@ -54,6 +58,7 @@
                             </select>
                         </div>
 
+                        {{-- Tombol Submit --}}
                         <div class="d-flex justify-content-between">
                             <button type="submit" class="btn btn-success">
                                 <i class="fa fa-save"></i> Simpan Produk
@@ -62,7 +67,6 @@
                                 <i class="fa fa-arrow-left"></i> Kembali
                             </a>
                         </div>
-
                     </form>
 
                 </div>
@@ -70,4 +74,18 @@
         </div>
     </div>
 </div>
+
+<script>
+    // Fungsi untuk pratinjau gambar yang dipilih oleh pengguna
+    function previewImage(event) {
+        const reader = new FileReader();
+        reader.onload = function () {
+            const preview = document.getElementById('preview-image');
+            preview.src = reader.result;
+            preview.classList.remove('d-none');  // Menampilkan gambar pratinjau
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    }
+</script>
+
 @endsection

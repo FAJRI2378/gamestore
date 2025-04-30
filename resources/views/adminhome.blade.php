@@ -3,19 +3,21 @@
 @section('content')
 <div class="container">
     <div class="row justify-content-center">
-        <div class="col-md-12">
-            <div class="card shadow-lg">
-                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0">Dashboard Produk</h4>
-                    <div>
-                        <a href="{{ route('kategori.create') }}" class="btn btn-secondary me-2">
-                            <i class="fa fa-plus"></i> Tambah Kategori
+        <div class="col-md-11">
+            <div class="card shadow-lg rounded-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center rounded-top">
+                    <h4 class="mb-0">
+                        <i class="fa fa-boxes me-2"></i> Dashboard Produk
+                    </h4>
+                    <div class="btn-group">
+                        <a href="{{ route('transactions.history') }}" class="btn btn-outline-light">
+                            <i class="fa fa-history me-1"></i> Riwayat Transaksi
                         </a>
-                        <a href="{{ route('transactions.history') }}" class="btn btn-secondary me-2">
-                            <i class="fa fa-history"></i> Riwayat Transaksi
+                        <a href="{{ route('kategori.index') }}" class="btn btn-outline-light">
+                            <i class="fa fa-list me-1"></i> Kelola Kategori
                         </a>
                         <a href="{{ route('produk.create') }}" class="btn btn-light text-primary fw-bold">
-                            + Tambah Produk
+                            <i class="fa fa-plus-circle"></i> Tambah Produk
                         </a>
                     </div>                    
                 </div>
@@ -23,7 +25,7 @@
 
                     @if(session('success'))
                         <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            {{ session('success') }}
+                            <i class="fa fa-check-circle me-1"></i> {{ session('success') }}
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                     @endif
@@ -52,46 +54,53 @@
 
                     {{-- Tabel Produk --}}
                     <div class="table-responsive">
-                        <table class="table table-bordered text-center">
+                        <table class="table table-hover align-middle text-center">
                             <thead class="table-dark">
                                 <tr>
                                     <th>Gambar</th>
                                     <th>Kode Produk</th>
                                     <th>Nama</th>
                                     <th>Kategori</th>
-                                    <th>Harga</th>
-                                    <th>Aksi</th>
+                                    <th>Harga/Kg</th>
+                                    <th style="width: 160px;">Aksi</th>
                                 </tr>
                             </thead>
+
                             <tbody>
                                 @forelse($produks as $produk)
                                 <tr>
                                     <td>
                                         @if($produk->image)
-                                            <img src="{{ asset('images/products/' . $produk->image) }}" alt="{{ $produk->nama }}" class="img-fluid" style="width: 100px; height: auto;">
+                                            <img src="{{ asset('storage/images_produk/' . $produk->image) }}" alt="Gambar" width="80" class="rounded-3">
                                         @else
-                                            <span class="text-muted">Tidak ada gambar</span>
+                                            <img src="{{ asset('storage/images_produk/default.png') }}" alt="Default Gambar" width="80" class="rounded-3">
                                         @endif
+                                        <div>{{ $produk->nama }}</div>
                                     </td>
                                     <td>{{ $produk->kode_produk }}</td>
                                     <td>{{ $produk->nama }}</td>
-                                    <td>{{ $produk->kategori->nama ?? '-' }}</td>
+                                    <td>{{ $produk->kategori->nama ?? 'Tidak ada' }}</td>
                                     <td>Rp {{ number_format($produk->harga, 0, ',', '.') }}</td>
                                     <td>
-                                        <a href="{{ route('produk.edit', $produk->id) }}" class="btn btn-warning btn-sm">Edit</a>
-                                        <form action="{{ route('produk.destroy', $produk->id) }}" method="POST" class="d-inline" id="delete-form-{{ $produk->id }}">
+                                        <a href="{{ route('produk.edit', $produk->id) }}" class="btn btn-sm btn-warning me-2">
+                                            <i class="fa fa-edit"></i>
+                                        </a>
+                                        <button class="btn btn-sm btn-danger" onclick="confirmDelete({{ $produk->id }}, '{{ $produk->nama }}')">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
+                                        <form id="delete-form-{{ $produk->id }}" action="{{ route('produk.destroy', $produk->id) }}" method="POST" style="display: none;">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete({{ $produk->id }})">Hapus</button>
                                         </form>
                                     </td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="6" class="text-center text-muted">Belum ada produk tersedia.</td>
+                                    <td colspan="6" class="text-muted text-center">Belum ada produk yang tersedia.</td>
                                 </tr>
                                 @endforelse
                             </tbody>
+
                         </table>
                     </div>
 
@@ -108,14 +117,14 @@
 <!-- SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    function confirmDelete(id) {
+    function confirmDelete(id, namaProduk) {
         Swal.fire({
-            title: "Hapus Produk?",
+            title: `Hapus produk "${namaProduk}"?`,
             text: "Produk yang dihapus tidak dapat dikembalikan!",
             icon: "warning",
             showCancelButton: true,
             confirmButtonColor: "#d33",
-            cancelButtonColor: "#3085d6",
+            cancelButtonColor: "#6c757d",
             confirmButtonText: "Ya, Hapus!",
             cancelButtonText: "Batal"
         }).then((result) => {
@@ -124,5 +133,15 @@
             }
         });
     }
+
+    @if(session('success'))
+    Swal.fire({
+        title: 'Berhasil!',
+        text: '{{ session("success") }}',
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false
+    });
+    @endif
 </script>
 @endsection

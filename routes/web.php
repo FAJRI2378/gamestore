@@ -17,6 +17,7 @@ Route::get('/', function () {
 // =============================
 // Autentikasi
 // =============================
+// Menyediakan rute autentikasi menggunakan Laravel UI
 Auth::routes(); 
 
 // =============================
@@ -25,6 +26,7 @@ Auth::routes();
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 Route::get('/admin/home', [HomeController::class, 'adminHome'])->name('admin.home');
 
+// Menambahkan middleware untuk role manager
 Route::middleware(['auth', 'user-access:manager'])->group(function () {
     Route::get('/manager/home', [HomeController::class, 'managerHome'])->name('manager.home');
 });
@@ -54,11 +56,14 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/transactions/{id}/receipt', [TransactionsController::class, 'printReceipt'])->name('transactions.receipt');
     Route::put('/transactions/{id}/updatestatus', [TransactionsController::class, 'updateStatus'])->name('transactions.updateStatus');
 
-    // Kategori
+    // Kategori (CRUD)
     Route::get('/kategori', [KategoriController::class, 'index'])->name('kategori.index');
     Route::get('/kategori/create', [KategoriController::class, 'create'])->name('kategori.create');
     Route::post('/kategori', [KategoriController::class, 'store'])->name('kategori.store');
-    Route::get('/kategori/{id}/edit', [KategoriController::class, 'edit'])->name('kategori.edit');
-    Route::put('/kategori/{id}', [KategoriController::class, 'update'])->name('kategori.update');
-    Route::delete('/kategori/{id}', [KategoriController::class, 'destroy'])->name('kategori.destroy');
+    Route::get('/kategori/{kategori}/edit', [KategoriController::class, 'edit'])->name('kategori.edit');
+    Route::put('/kategori/{kategori}', [KategoriController::class, 'update'])->name('kategori.update');
+    Route::delete('/kategori/{kategori}', [KategoriController::class, 'destroy'])->name('kategori.destroy');
+
+    // Produk Live Search
+    Route::get('/produk/live-search', [ProdukController::class, 'liveSearch'])->name('produk.live-search');
 });
