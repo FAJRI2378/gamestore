@@ -21,7 +21,7 @@
                         </div>
                     @endif
 
-                    <form action="{{ route('produk.update', $produk->id) }}" method="POST">
+                    <form action="{{ route('produk.update', $produk->id) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
 
@@ -39,30 +39,19 @@
                             <label for="harga" class="form-label">Harga</label>
                             <input type="number" name="harga" class="form-control" value="{{ $produk->harga }}" required min="0">
                         </div>
+
                         <div class="mb-3">
-                            <label for="image" class="form-label">Gambar Produk</label>
+                            <label for="image" class="form-label">Gambar Produk (Opsional)</label>
                             <input type="file" name="image" class="form-control" accept="image/*">
-                        </div>
-                        <!-- Kategori -->
-                        <div class="mb-3">
-                            <label for="kategori_id" class="form-label">Kategori</label>
-                            <select name="kategori_id" class="form-select" required>
-                                <option value="">Pilih Kategori</option>
-                                @foreach($kategoris as $kategori)
-                                    <option value="{{ $kategori->id }}" {{ $produk->kategori_id == $kategori->id ? 'selected' : '' }}>
-                                        {{ $kategori->name }}
-                                    </option>
-                                @endforeach
-                            </select>
                         </div>
 
                         <div class="mb-3">
                             <label for="kategori_id" class="form-label">Kategori</label>
-                            <select name="kategori_id" class="form-control" required>
+                            <select name="kategori_id" class="form-select" required>
                                 <option value="">-- Pilih Kategori --</option>
                                 @foreach($kategoris as $kategori)
                                     <option value="{{ $kategori->id }}" {{ $produk->kategori_id == $kategori->id ? 'selected' : '' }}>
-                                        {{ $kategori->nama }}
+                                        {{ $kategori->name }}
                                     </option>
                                 @endforeach
                             </select>

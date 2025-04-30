@@ -51,7 +51,7 @@ class HomeController extends Controller
      */
     public function adminHome()
     {
-        $produks = Produk::all(); // Mengambil semua produk
+        $produks = Produk::paginate(10); // Mengambil 10 produk per halaman        // Mengambil semua produk
         return view('adminHome', compact('produks')); // Mengirim data ke view adminHome.blade.php
     }
 

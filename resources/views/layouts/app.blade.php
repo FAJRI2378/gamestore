@@ -1,5 +1,7 @@
-@php use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;@endphp
+@php
+    use Illuminate\Support\Facades\Route;
+    use Illuminate\Support\Facades\Auth;
+@endphp
 
 <!doctype html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
@@ -9,16 +11,16 @@ use Illuminate\Support\Facades\Auth;@endphp
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>Olshop Fajri</title>
+    <title>{{ config('app.name', 'Olshop Fajri') }}</title>
 
     <!-- Fonts -->
     <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">
 
-    <!-- Bootstrap CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Vite -->
-    @vite(['resources/sass/app.scss', 'resources/js/app.js'])
+    <!-- Vite compiled CSS only -->
+    @vite(['resources/sass/app.scss'])
 
     <style>
         body {
@@ -37,6 +39,7 @@ use Illuminate\Support\Facades\Auth;@endphp
             height: 100vh;
             position: sticky;
             top: 0;
+            overflow-y: auto;
         }
         .main-content {
             flex-grow: 1;
@@ -47,6 +50,7 @@ use Illuminate\Support\Facades\Auth;@endphp
 </head>
 <body>
     <div id="app">
+        <!-- Navbar -->
         <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
             <div class="container">
                 <a class="navbar-brand" href="{{ url('/') }}">
@@ -69,31 +73,31 @@ use Illuminate\Support\Facades\Auth;@endphp
 
         <div class="wrapper">
             <!-- Sidebar -->
-           <aside class="sidebar">
-    <h5>Kategori</h5>
-    <form action="{{ route('produk.index') }}" method="GET">
-        <select class="form-select" name="kategori_id" onchange="this.form.submit()">
-            <option value="">Semua Kategori</option>
-            @foreach($kategoris as $kategori)
-                <option value="{{ $kategori->id }}" {{ request('kategori_id') == $kategori->id ? 'selected' : '' }}>
-                    {{ $kategori->name }}
-                </option>
-            @endforeach
-        </select>
-    </form>
-</aside>
+            <aside class="sidebar">
+                <h5>Kategori</h5>
+                <form action="{{ route('produk.index') }}" method="GET">
+                    <select class="form-select" name="kategori_id" onchange="this.form.submit()">
+                        <option value="">Semua Kategori</option>
+                        @foreach($kategoris as $kategori)
+                            <option value="{{ $kategori->id }}" {{ request('kategori_id') == $kategori->id ? 'selected' : '' }}>
+                                {{ $kategori->nama }}
+                            </option>
+                        @endforeach
+                    </select>
+                </form>
+            </aside>
 
-
-            <!-- Main content -->
+            <!-- Main Content -->
             <main class="main-content">
                 @yield('content')
             </main>
         </div>
     </div>
 
-    <!-- SweetAlert & Bootstrap Script -->
+    <!-- SweetAlert & Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
         function confirmLogout(event) {
             event.preventDefault();

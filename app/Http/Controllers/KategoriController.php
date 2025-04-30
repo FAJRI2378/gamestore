@@ -4,29 +4,72 @@ namespace App\Http\Controllers;
 
 use App\Models\Kategori;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class KategoriController extends Controller
 {
-    // Menampilkan form untuk menambah kategori
-    public function create()
+    public function index()
     {
-        return view('kategori.create');  // Pastikan ada view kategori.create
+        // Menampilkan semua kategori
+        $kategoris = Kategori::all();
+        return view('kategori.index', compact('kategoris'));
     }
 
-    // Menyimpan kategori ke database
-    public function store(Request $request)
+    public function create()
     {
-        // Validasi form
+        // Menampilkan form untuk menambahkan kategori baru
+        return view('kategori.create');
+    }
+
+
+
+public function store(Request $request)
+{
+    DB::listen(function ($query) {
+        logger($query->sql);
+    });
+
+    // Validasi data
+    $request->validate([
+        'nama' => 'required|string|max:255',
+    ]);
+
+    // Menyimpan kategori baru
+    Kategori::create([
+        'nama' => $request->nama,
+    ]);
+
+    return redirect()->route('kategori.index')->with('success', 'Kategori berhasil ditambahkan');
+}
+
+
+    public function edit($id)
+    {
+        // Menampilkan form untuk mengedit kategori
+        $kategori = Kategori::findOrFail($id);
+        return view('kategori.edit', compact('kategori'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        // Validasi data
         $request->validate([
             'nama' => 'required|string|max:255',
         ]);
 
-        // Menyimpan kategori ke database
-        Kategori::create([
+        // Mengupdate kategori
+        $kategori = Kategori::findOrFail($id);
+        $kategori->update([
             'nama' => $request->nama,
         ]);
 
-        // Mengarahkan pengguna ke halaman admin.home setelah berhasil menambahkan kategori
-        return redirect()->route('admin.home')->with('success', 'Kategori berhasil ditambahkan!');
+        return redirect()->route('kategori.index')->with('success', 'Kategori berhasil diperbarui');
+    }
+
+    public function destroy($id)
+    {
+        // Menghapus kategori
+        Kategori::findOrFail($id)->delete();
+        return redirect()->route('kategori.index')->with('success', 'Kategori berhasil dihapus');
     }
 }

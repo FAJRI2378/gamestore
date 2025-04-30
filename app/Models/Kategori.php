@@ -9,10 +9,8 @@ class Kategori extends Model
 {
     use HasFactory;
 
-    // Pastikan field 'nama' sesuai tabel database
     protected $fillable = ['nama'];
 
-    // Relasi One-to-Many: Satu Kategori memiliki banyak Produk
     public function produks()
     {
         return $this->hasMany(Produk::class);
