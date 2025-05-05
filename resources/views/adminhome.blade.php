@@ -61,7 +61,7 @@
                                     <th>Kode Produk</th>
                                     <th>Nama</th>
                                     <th>Kategori</th>
-                                    <th>Harga/Kg</th>
+                                    <th>Harga</th>
                                     <th style="width: 160px;">Aksi</th>
                                 </tr>
                             </thead>

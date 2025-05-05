@@ -51,9 +51,12 @@
                 </table>
             </div>
 
-            <div class="mt-3">
-                {{ $kategoris->links() }}
-            </div>
+            @if(method_exists($kategoris, 'links'))
+    <div class="mt-3">
+        {{ $kategoris->links() }}
+    </div>
+@endif
+         
         </div>
     </div>
 </div>
@@ -80,12 +83,13 @@
                     cancelButtonText: 'Batal'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        form.submit();
+                        form.submit(); // Only submit the form if confirmed
                     }
                 });
             });
         });
 
+        // Show success alert if a success message is set in the session
         @if(session('success'))
         Swal.fire({
             title: 'Berhasil!',

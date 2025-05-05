@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
         <div class="col-md-10">
             <div class="card shadow-lg">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0">Produk Laundry</h4>
+                    <h4 class="mb-0">Daftar Produk</h4>
                     <div class="d-flex align-items-center gap-2">
                         <a href="{{ route('transactions.index') }}" class="btn btn-light me-2">
                             <i class="fa fa-history"></i> Riwayat
@@ -64,7 +64,7 @@ use Illuminate\Support\Facades\Auth;
                             <thead class="table-dark">
                                 <tr>
                                     <th>Produk</th>
-                                    <th>Harga/Kg</th>
+                                    <th>Harga</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>

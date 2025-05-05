@@ -12,17 +12,15 @@ return new class extends Migration
     public function up()
 {
     Schema::table('produks', function (Blueprint $table) {
-        $table->foreignId('kategori_id')->nullable()->constrained()->onDelete('set null');
+        $table->foreignId('kategori_id')->constrained('kategoris')->onDelete('cascade');
     });
 }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::table('produks', function (Blueprint $table) {
-            //
-        });
-    }
+public function down()
+{
+    Schema::table('produks', function (Blueprint $table) {
+        $table->dropColumn('kategori_id');
+    });
+}
+
 };

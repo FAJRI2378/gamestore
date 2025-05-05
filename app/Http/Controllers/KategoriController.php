@@ -11,9 +11,12 @@ class KategoriController extends Controller
     // Menampilkan semua kategori dengan pagination
     public function index()
     {
-        $kategoris = Kategori::latest()->paginate(10);
+        $kategoris = Kategori::paginate(5); // JANGAN pakai ->get()
+    
         return view('kategori.index', compact('kategoris'));
     }
+    
+
 
     // Menampilkan form tambah kategori
     public function create()
@@ -24,9 +27,12 @@ class KategoriController extends Controller
     // Menyimpan kategori baru ke database
     public function store(Request $request)
     {
-        DB::listen(function ($query) {
-            logger($query->sql);
-        });
+        if (app()->environment() !== 'production') {
+            DB::listen(function ($query) {
+                logger($query->sql);
+            });
+        }
+        
 
         $request->validate([
             'nama' => 'required|string|max:255',

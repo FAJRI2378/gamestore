@@ -52,6 +52,10 @@
                                 <button class="btn btn-danger remove-item" data-id="{{ $id }}">
                                     <i class="fa fa-trash"></i> Hapus
                                 </button>
+                                
+                                <a href="{{ route('keranjang.checkout') }}" class="btn btn-success checkout-btn" id="btn-checkout">
+                                    <i class="fa fa-credit-card"></i> Checkout
+                                </a>
                             </td>
                         </tr>
                     @endforeach
@@ -64,9 +68,6 @@
         <button class="btn btn-warning clear-cart">
             <i class="fa fa-trash"></i> Kosongkan Keranjang
         </button>
-        <a href="{{ route('keranjang.checkout') }}" class="btn btn-success checkout-btn" id="btn-checkout">
-            <i class="fa fa-credit-card"></i> Checkout
-        </a>
 
         <a href="{{ route('home') }}" class="btn btn-secondary">
             <i class="fa fa-home"></i> Kembali ke Home
