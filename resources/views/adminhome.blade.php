@@ -37,9 +37,7 @@
                                 <select class="form-select" name="kategori_id" onchange="this.form.submit()">
                                     <option value="">Semua Kategori</option>
                                     @foreach($kategoris as $kategori)
-                                        <option value="{{ $kategori->id }}" {{ request('kategori_id') == $kategori->id ? 'selected' : '' }}>
-                                            {{ $kategori->nama }}
-                                        </option>
+                                        <option value="{{ $kategori->id }}" {{ request('kategori_id') == $kategori->id ? 'selected' : '' }}>{{ $kategori->nama }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -62,45 +60,45 @@
                                     <th>Nama</th>
                                     <th>Kategori</th>
                                     <th>Harga</th>
+                                    <th>Stok</th>
                                     <th style="width: 160px;">Aksi</th>
                                 </tr>
                             </thead>
-
                             <tbody>
                                 @forelse($produks as $produk)
-                                <tr>
-                                    <td>
-                                        @if($produk->image)
-                                            <img src="{{ asset('storage/images_produk/' . $produk->image) }}" alt="Gambar" width="80" class="rounded-3">
-                                        @else
-                                            <img src="{{ asset('storage/images_produk/default.png') }}" alt="Default Gambar" width="80" class="rounded-3">
-                                        @endif
-                                        <div>{{ $produk->nama }}</div>
-                                    </td>
-                                    <td>{{ $produk->kode_produk }}</td>
-                                    <td>{{ $produk->nama }}</td>
-                                    <td>{{ $produk->kategori->nama ?? 'Tidak ada' }}</td>
-                                    <td>Rp {{ number_format($produk->harga, 0, ',', '.') }}</td>
-                                    <td>
-                                        <a href="{{ route('produk.edit', $produk->id) }}" class="btn btn-sm btn-warning me-2">
-                                            <i class="fa fa-edit"></i>
-                                        </a>
-                                        <button class="btn btn-sm btn-danger" onclick="confirmDelete({{ $produk->id }}, '{{ $produk->nama }}')">
-                                            <i class="fa fa-trash"></i>
-                                        </button>
-                                        <form id="delete-form-{{ $produk->id }}" action="{{ route('produk.destroy', $produk->id) }}" method="POST" style="display: none;">
-                                            @csrf
-                                            @method('DELETE')
-                                        </form>
-                                    </td>
-                                </tr>
+                                    <tr>
+                                        <td>
+                                            @if($produk->image)
+                                                <img src="{{ asset('storage/images_produk/' . $produk->image) }}" alt="Gambar" width="80" class="rounded-3">
+                                            @else
+                                                <img src="{{ asset('storage/images_produk/default.png') }}" alt="Default Gambar" width="80" class="rounded-3">
+                                            @endif
+                                            <div>{{ $produk->nama }}</div>
+                                        </td>
+                                        <td>{{ $produk->kode_produk }}</td>
+                                        <td>{{ $produk->nama }}</td>
+                                        <td>{{ $produk->kategori->nama ?? 'Tidak ada' }}</td>
+                                        <td>Rp {{ number_format($produk->harga, 0, ',', '.') }}</td>
+                                        <td>{{ $produk->stok }}</td>
+                                        <td>
+                                            <a href="{{ route('produk.edit', $produk->id) }}" class="btn btn-sm btn-warning me-2">
+                                                <i class="fa fa-edit"></i>
+                                            </a>
+                                            <button class="btn btn-sm btn-danger" onclick="confirmDelete({{ $produk->id }}, '{{ $produk->nama }}')">
+                                                <i class="fa fa-trash"></i>
+                                            </button>
+                                            <form id="delete-form-{{ $produk->id }}" action="{{ route('produk.destroy', $produk->id) }}" method="POST" style="display: none;">
+                                                @csrf
+                                                @method('DELETE')
+                                            </form>
+                                        </td>
+                                    </tr>
                                 @empty
-                                <tr>
-                                    <td colspan="6" class="text-muted text-center">Belum ada produk yang tersedia.</td>
-                                </tr>
+                                    <tr>
+                                        <td colspan="7" class="text-muted text-center">Belum ada produk yang tersedia.</td>
+                                    </tr>
                                 @endforelse
                             </tbody>
-
                         </table>
                     </div>
 

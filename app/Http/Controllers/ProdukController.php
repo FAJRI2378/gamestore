@@ -56,25 +56,31 @@ class ProdukController extends Controller
 
     // Menyimpan produk baru
     public function store(Request $request)
-    {
-        $request->validate([
-            'kode_produk' => 'required',
-            'nama' => 'required',
-            'harga' => 'required|numeric',
-            'kategori_id' => 'required|exists:kategoris,id',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
+{
+    // Validasi inputan
+    $request->validate([
+        'kode_produk' => 'required|unique:produks,kode_produk',
+        'nama' => 'required',
+        'harga' => 'required|numeric',
+        'kategori_id' => 'required|exists:kategoris,id',
+        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        'stok' => 'required|integer|min:0',
+    ]);
 
-        $data = $request->only('kode_produk', 'nama', 'harga', 'kategori_id');
+    // Ambil data dari request
+    $data = $request->only('kode_produk', 'nama', 'harga', 'kategori_id', 'stok');
 
-        if ($request->hasFile('image')) {
-            $data['image'] = $this->uploadImage($request->file('image'));
-        }
-
-        Produk::create($data);
-
-        return redirect()->route('admin.home')->with('success', 'Produk berhasil ditambahkan!');
+    // Jika ada gambar yang diupload, proses upload
+    if ($request->hasFile('image')) {
+        $data['image'] = $this->uploadImage($request->file('image'));
     }
+
+    // Simpan produk baru ke database
+    Produk::create($data);
+
+    return redirect()->route('admin.home')->with('success', 'Produk berhasil ditambahkan!');
+}
+
 
     // Upload gambar
     private function uploadImage($file)
@@ -105,6 +111,7 @@ class ProdukController extends Controller
             'harga' => 'required|numeric',
             'kategori_id' => 'nullable|exists:kategoris,id',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'stok' => 'required|integer|min:0',
         ]);
 
         $data = $request->only('nama', 'harga', 'kategori_id');

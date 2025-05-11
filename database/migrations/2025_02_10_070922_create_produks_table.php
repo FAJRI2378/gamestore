@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('kode_produk')->unique();
             $table->string('nama');
             $table->decimal('harga', 10, 2); // Menggunakan decimal untuk harga
+            $table->integer('stok')->default(0); // Kolom stok
             $table->timestamps();
         });
     }

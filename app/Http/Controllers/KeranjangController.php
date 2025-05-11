@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Auth;
 
 
 
-
 class KeranjangController extends Controller
 {
     /**
@@ -112,7 +111,7 @@ public function checkout()
     }
 
     $transactions = Transactions::create([
-        'user_id' => auth()->id(),
+        'user_id' => Auth::id(),
         'items' => json_encode($cart),
         'total_harga' => $total,
         'status' => 'pending',

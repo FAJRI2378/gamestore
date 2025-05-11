@@ -34,4 +34,14 @@ class User extends Authenticatable
     {
         return $this->role === $role;
     }
+
+    public function pesanMasuk()
+    {
+        return $this->hasMany(Pesan::class, 'to_id');  // Relasi dengan pesan masuk
+    }
+
+    public function pesanKeluar()
+    {
+        return $this->hasMany(Pesan::class, 'from_id');  // Relasi dengan pesan keluar
+    }
 }

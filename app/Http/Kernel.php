@@ -1,10 +1,13 @@
 <?php
+
 namespace App\Http;
+
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
+
 class Kernel extends HttpKernel
 {
-/**
-* The application's global HTTP middleware stack.
+    /**
+     * The application's global HTTP middleware stack.
      *
      * These middleware are run during every request to your application.
      *
@@ -20,6 +23,13 @@ class Kernel extends HttpKernel
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
     ];
 
+    /**
+     * The application's route middleware.
+     *
+     * These middleware may be assigned to groups or used individually.
+     *
+     * @var array<string, class-string|string>
+     */
     protected $routeMiddleware = [
         'auth' => \App\Http\Middleware\Authenticate::class,
         'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
@@ -30,8 +40,6 @@ class Kernel extends HttpKernel
         'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-        'user-access' => \App\Http\Middleware\UserAccess::class,
-        'role' => \App\Http\Middleware\UserAccess::class,
     ];
 
     /**
@@ -55,6 +63,7 @@ class Kernel extends HttpKernel
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
     ];
+
 
     /**
      * The application's middleware aliases.

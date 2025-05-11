@@ -8,10 +8,11 @@ use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\KeranjangController;
 use App\Http\Controllers\TransactionsController;
 use App\Http\Controllers\KategoriController;
+use App\Http\Controllers\PesanController;
 
 // Halaman Utama
 Route::get('/', function () {
-    return view('auth/login');
+    return view('auth.login');
 });
 
 // =============================
@@ -23,11 +24,14 @@ Auth::routes();
 // =============================
 // Dashboard berdasarkan role
 // =============================
+// Dashboard untuk user umum
 Route::get('/home', [HomeController::class, 'index'])->name('home');
+
+// Dashboard admin
 Route::get('/admin/home', [HomeController::class, 'adminHome'])->name('admin.home');
 
 // Menambahkan middleware untuk role manager
-Route::middleware(['auth', 'user-access:manager'])->group(function () {
+Route::middleware(['auth', 'role:manager'])->group(function () {
     Route::get('/manager/home', [HomeController::class, 'managerHome'])->name('manager.home');
 });
 
@@ -57,12 +61,14 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/transactions/{id}/updatestatus', [TransactionsController::class, 'updateStatus'])->name('transactions.updateStatus');
 
     // Kategori (CRUD)
-    Route::get('/kategori', [KategoriController::class, 'index'])->name('kategori.index');
-    Route::get('/kategori/create', [KategoriController::class, 'create'])->name('kategori.create');
-    Route::post('/kategori', [KategoriController::class, 'store'])->name('kategori.store');
-    Route::get('/kategori/{kategori}/edit', [KategoriController::class, 'edit'])->name('kategori.edit');
-    Route::put('/kategori/{kategori}', [KategoriController::class, 'update'])->name('kategori.update');
-    Route::delete('/kategori/{kategori}', [KategoriController::class, 'destroy'])->name('kategori.destroy');
+    Route::resource('kategori', KategoriController::class);
+
+    
+        // Pesan
+        Route::get('/pesan/create', [PesanController::class, 'create'])->name('pesan.create');
+        Route::post('/pesan', [PesanController::class, 'store'])->name('pesan.store');
+        // Menambahkan route untuk pesan.index
+        Route::get('/pesan', [PesanController::class, 'index'])->name('pesan.index');
 
     // Produk Live Search
     Route::get('/produk/live-search', [ProdukController::class, 'liveSearch'])->name('produk.live-search');

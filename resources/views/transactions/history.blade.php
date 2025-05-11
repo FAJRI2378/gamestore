@@ -4,10 +4,18 @@
 <div class="container">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h3 class="mb-0">📜 Riwayat Transaksi</h3>
+
+<!-- Tombol Kirim Pesan di tengah -->
+        <a href="{{ route('pesan.create', ['to_id' => $transactions->first()->user->id ?? 1]) }}" class="btn btn-outline-primary btn-sm mx-auto">
+            ✉️ Kirim Pesan
+        </a>
+
+
         <a href="{{ route('home') }}" class="btn btn-outline-secondary">
             <i class="fa fa-home me-1"></i> Kembali ke Dashboard
         </a>
     </div>
+
 
     @if($transactions->isEmpty())
         <div class="alert alert-info text-center">
@@ -85,5 +93,6 @@
             </table>
         </div>
     @endif
+
 </div>
 @endsection

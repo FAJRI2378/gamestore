@@ -65,6 +65,12 @@
                         <div class="mb-3">
                             <label for="image" class="form-label">Gambar Produk</label>
 
+                            <div class="mb-3">
+                                <label for="stok" class="form-label">Stok</label>
+                                <input type="number" name="stok" id="stok" class="form-control" value="{{ $produk->stok }}" required min="0">
+                            </div>
+
+
                             {{-- Menampilkan gambar produk yang ada --}}
                             @if($produk->image)
                                 <div>

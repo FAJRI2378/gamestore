@@ -1,8 +1,3 @@
-@php
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
-@endphp
-
 @extends('layouts.app')
 
 @section('content')
@@ -21,6 +16,9 @@ use Illuminate\Support\Facades\Auth;
                             <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-count">
                                 {{ session('cart') ? count(session('cart')) : 0 }}
                             </span>
+                        </a>
+                        <a href="{{ route('pesan.index') }}" class="btn btn-info">
+                            <i class="fa fa-envelope"></i> Lihat Pesan Masuk
                         </a>
                     </div>
                 </div>
@@ -63,9 +61,13 @@ use Illuminate\Support\Facades\Auth;
                         <table class="table table-bordered text-center align-middle">
                             <thead class="table-dark">
                                 <tr>
-                                    <th>Produk</th>
+                                    <th>Gambar</th>
+                                    <th>Kode Produk</th>
+                                    <th>Nama Produk</th>
+                                    <th>Kategori</th>
                                     <th>Harga</th>
-                                    <th>Action</th>
+                                    <th>Stok</th>
+                                    <th>Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -73,18 +75,48 @@ use Illuminate\Support\Facades\Auth;
                                     <tr>
                                         <td>
                                             <img src="{{ asset('storage/images_produk/' . ($produk->image ?? 'default.png')) }}" width="80" class="rounded-3 mb-2">
-                                            <div>{{ $produk->nama }}</div>
                                         </td>
+                                        <td>{{ $produk->kode_produk }}</td>
+                                        <td>{{ $produk->nama }}</td>
+                                        <td>{{ $produk->kategori->nama ?? '-' }}</td>
                                         <td>Rp {{ number_format($produk->harga, 0, ',', '.') }}</td>
+                                        <td>{{ $produk->stok }}</td>
                                         <td>
-                                            <button class="btn btn-primary add-to-cart" data-id="{{ $produk->id }}">
-                                                <i class="fa fa-cart-plus"></i> Beli
-                                            </button>
+                                            @can('update', $produk)
+                                                <a href="{{ route('produk.edit', $produk->id) }}" class="btn btn-sm btn-warning me-1">
+                                                    <i class="fa fa-edit"></i>
+                                                </a>
+                                            @endcan
+
+                                            @can('delete', $produk)
+                                                <form action="{{ route('produk.destroy', $produk->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus produk ini?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button class="btn btn-sm btn-danger me-1">
+                                                        <i class="fa fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            @endcan
+
+                                            {{-- Menampilkan tombol "Beli" hanya jika produk ada stoknya dan user login --}}
+                                            @if(auth()->check() && $produk->stok > 0)
+                                                <button class="btn btn-primary btn-sm add-to-cart" data-id="{{ $produk->id }}">
+                                                    <i class="fa fa-cart-plus"></i> Beli
+                                                </button>
+                                            @elseif($produk->stok == 0)
+                                                <button class="btn btn-secondary btn-sm" disabled>
+                                                    Stok Habis
+                                                </button>
+                                            @else
+                                                <button class="btn btn-secondary btn-sm" disabled>
+                                                    Login untuk membeli
+                                                </button>
+                                            @endif
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="3">Tidak ada produk tersedia.</td>
+                                        <td colspan="7">Tidak ada produk tersedia.</td>
                                     </tr>
                                 @endforelse
                             </tbody>

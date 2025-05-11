@@ -12,28 +12,26 @@
         @csrf
         <div class="mb-3">
             <label for="to_id">Pilih User</label>
-            <select name="to_id" class="form-select" required>
-                <option value="">Pilih User</option>
+            <select name="to_id" class="form-control">
+                <option value="">Pilih Pengguna</option>
                 @foreach($users as $user)
                     <option value="{{ $user->id }}" {{ old('to_id') == $user->id ? 'selected' : '' }}>
-                        {{ $user->name }}
+                        {{ $user->name }} ({{ $user->email }})
                     </option>
                 @endforeach
             </select>
             @error('to_id')
-                <div class="alert alert-danger mt-2">{{ $message }}</div>
+                <div class="text-danger">{{ $message }}</div>
             @enderror
         </div>
-        
         <div class="mb-3">
             <label for="isi">Isi Pesan</label>
-            <textarea name="isi" class="form-control" rows="4" required>{{ old('isi') }}</textarea>
+            <textarea name="isi" class="form-control" rows="4">{{ old('isi') }}</textarea>
             @error('isi')
-                <div class="alert alert-danger mt-2">{{ $message }}</div>
+                <div class="text-danger">{{ $message }}</div>
             @enderror
         </div>
-
-        <button type="submit" class="btn btn-primary">Kirim</button>
+        <button class="btn btn-primary">Kirim</button>
     </form>
 </div>
 @endsection
