@@ -10,8 +10,10 @@ class Produk extends Model
     use HasFactory;
 
     // Mass assignment fields
-    protected $fillable = [
-        'kode_produk', 'nama', 'harga', 'kategori_id', 'stok', 'image'];
+   protected $fillable = [
+    'user_id', 'kode_produk', 'nama', 'harga', 'kategori_id', 'stok', 'image'
+];
+
 
     // Relasi Many-to-One: Produk memiliki satu Kategori
     public function kategori()

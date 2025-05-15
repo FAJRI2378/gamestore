@@ -14,12 +14,19 @@
                         <a href="{{ route('keranjang.index') }}" class="btn btn-warning position-relative">
                             <i class="fa fa-shopping-cart"></i>
                             <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-count">
-                                {{ session('cart') ? count(session('cart')) : 0 }}
+                                {{ count((array) session('cart')) }}
                             </span>
                         </a>
                         <a href="{{ route('pesan.index') }}" class="btn btn-info">
                             <i class="fa fa-envelope"></i> Lihat Pesan Masuk
                         </a>
+
+                        <a href="{{ route('game.store') }}" class="btn btn-success">
+    <i class="fa fa-gamepad"></i> Game Store
+</a>
+
+
+
                     </div>
                 </div>
 
@@ -33,7 +40,7 @@
                     @endif
 
                     {{-- Live Search --}}
-                    <div class="mb-3 position-relative">
+                    <div class="mb-3">
                         <form action="{{ route('produk.index') }}" method="GET" id="search-form">
                             <div class="row g-2">
                                 <div class="col-md-8 position-relative">
@@ -48,13 +55,11 @@
                     </div>
 
                     {{-- Tambah Produk --}}
-                    @can('create', App\Models\Produk::class)
-                        <div class="mb-3">
-                            <a href="{{ route('produk.create') }}" class="btn btn-success">
-                                <i class="fa fa-plus"></i> Tambah Produk
-                            </a>
-                        </div>
-                    @endcan
+              {{-- Sebelumnya hanya admin --}}
+{{-- @if (auth()->check() && auth()->user()->role === 'admin') --}}
+@if(auth()->check())
+    <a href="{{ route('produk.create') }}" class="btn btn-success">+ Tambah Produk</a>
+@endif
 
                     {{-- Tabel Produk --}}
                     <div class="table-responsive">
@@ -70,56 +75,55 @@
                                     <th>Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                @forelse($produks as $produk)
-                                    <tr>
-                                        <td>
-                                            <img src="{{ asset('storage/images_produk/' . ($produk->image ?? 'default.png')) }}" width="80" class="rounded-3 mb-2">
-                                        </td>
-                                        <td>{{ $produk->kode_produk }}</td>
-                                        <td>{{ $produk->nama }}</td>
-                                        <td>{{ $produk->kategori->nama ?? '-' }}</td>
-                                        <td>Rp {{ number_format($produk->harga, 0, ',', '.') }}</td>
-                                        <td>{{ $produk->stok }}</td>
-                                        <td>
-                                            @can('update', $produk)
-                                                <a href="{{ route('produk.edit', $produk->id) }}" class="btn btn-sm btn-warning me-1">
-                                                    <i class="fa fa-edit"></i>
-                                                </a>
-                                            @endcan
+                         <tbody>
+    @forelse($produks as $produk)
+        <tr>
+            <td>
+                <img src="{{ asset('storage/images_produk/' . ($produk->image ?? 'default.png')) }}" alt="{{ $produk->nama }}" width="80" class="rounded-3 mb-2">
+            </td>
+            <td>{{ $produk->kode_produk }}</td>
+            <td>{{ $produk->nama }}</td>
+            <td>{{ $produk->kategori->nama ?? '-' }}</td>
+            <td>Rp {{ number_format($produk->harga, 0, ',', '.') }}</td>
+            <td>{{ $produk->stok }}</td>
+            <td>
+                @if(auth()->check() && auth()->user()->role === 'admin')
+                    {{-- Admin bisa edit/hapus semua produk --}}
+                    <a href="{{ route('produk.edit', $produk->id) }}" class="btn btn-sm btn-warning me-1">
+                        <i class="fa fa-edit"></i>
+                    </a>
+                    <form action="{{ route('produk.destroy', $produk->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus produk ini?')">
+                        @csrf
+                        @method('DELETE')
+                        <button class="btn btn-sm btn-danger me-1">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </form>
+                @elseif(auth()->check() && auth()->id() === $produk->user_id)
+                    {{-- User hanya bisa edit/hapus produk miliknya --}}
+                    <a href="{{ route('produk.edit', $produk->id) }}" class="btn btn-sm btn-warning me-1">
+                        <i class="fa fa-edit"></i>
+                    </a>
+                    <form action="{{ route('produk.destroy', $produk->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus produk ini?')">
+                        @csrf
+                        @method('DELETE')
+                        <button class="btn btn-sm btn-danger me-1">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </form>
+                @else
+                    {{-- Produk milik user lain tidak ada tombol aksi --}}
+                    <span class="text-muted">-</span>
+                @endif
+            </td>
+        </tr>
+    @empty
+        <tr>
+            <td colspan="7">Tidak ada produk tersedia.</td>
+        </tr>
+    @endforelse
+</tbody>
 
-                                            @can('delete', $produk)
-                                                <form action="{{ route('produk.destroy', $produk->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus produk ini?')">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button class="btn btn-sm btn-danger me-1">
-                                                        <i class="fa fa-trash"></i>
-                                                    </button>
-                                                </form>
-                                            @endcan
-
-                                            {{-- Menampilkan tombol "Beli" hanya jika produk ada stoknya dan user login --}}
-                                            @if(auth()->check() && $produk->stok > 0)
-                                                <button class="btn btn-primary btn-sm add-to-cart" data-id="{{ $produk->id }}">
-                                                    <i class="fa fa-cart-plus"></i> Beli
-                                                </button>
-                                            @elseif($produk->stok == 0)
-                                                <button class="btn btn-secondary btn-sm" disabled>
-                                                    Stok Habis
-                                                </button>
-                                            @else
-                                                <button class="btn btn-secondary btn-sm" disabled>
-                                                    Login untuk membeli
-                                                </button>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="7">Tidak ada produk tersedia.</td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
                         </table>
                     </div>
 
@@ -135,14 +139,15 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    // Add to cart
+    // Tombol beli (add to cart)
     document.querySelectorAll('.add-to-cart').forEach(button => {
         button.addEventListener('click', async function () {
-            let produkId = this.getAttribute('data-id');
-            let originalButtonContent = this.innerHTML;
+            let produkId = this.dataset.id;
+            let btn = this;
+            let originalHTML = btn.innerHTML;
 
-            this.disabled = true;
-            this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Loading...';
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Loading...';
 
             try {
                 const response = await fetch("{{ route('keranjang.store') }}", {
@@ -170,13 +175,13 @@ document.addEventListener('DOMContentLoaded', function () {
             } catch (error) {
                 Swal.fire("Error", "Gagal menambahkan ke keranjang.", "error");
             } finally {
-                this.disabled = false;
-                this.innerHTML = originalButtonContent;
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
             }
         });
     });
 
-    // Live Search AJAX
+    // Live Search
     const searchInput = document.getElementById('live-search');
     const resultBox = document.getElementById('live-search-results');
     let timeout = null;
@@ -224,9 +229,9 @@ document.addEventListener('DOMContentLoaded', function () {
     background: #fff;
     border: 1px solid #ddd;
     border-radius: 4px;
-    z-index: 999;
     max-height: 300px;
     overflow-y: auto;
+    z-index: 1050;
 }
 
 .live-search-item:hover {
@@ -234,5 +239,4 @@ document.addEventListener('DOMContentLoaded', function () {
     cursor: pointer;
 }
 </style>
-
 @endsection

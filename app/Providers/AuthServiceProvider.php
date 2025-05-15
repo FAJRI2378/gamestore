@@ -19,5 +19,6 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('isAdmin', function (User $user) {
             return $user->hasRole('admin'); // Pastikan role admin sudah benar
         });
+        
     }
 }

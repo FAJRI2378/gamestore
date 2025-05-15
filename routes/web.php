@@ -10,66 +10,74 @@ use App\Http\Controllers\TransactionsController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\PesanController;
 
-// Halaman Utama
+// Halaman Utama: langsung redirect ke halaman login
 Route::get('/', function () {
     return view('auth.login');
 });
 
 // =============================
-// Autentikasi
+// Autentikasi (Laravel UI)
 // =============================
-// Menyediakan rute autentikasi menggunakan Laravel UI
 Auth::routes(); 
 
 // =============================
 // Dashboard berdasarkan role
 // =============================
-// Dashboard untuk user umum
+// Dashboard untuk user biasa
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 
-// Dashboard admin
+// Dashboard untuk admin
 Route::get('/admin/home', [HomeController::class, 'adminHome'])->name('admin.home');
 
-// Menambahkan middleware untuk role manager
+// Dashboard untuk manager, dengan middleware auth dan role:manager
 Route::middleware(['auth', 'role:manager'])->group(function () {
     Route::get('/manager/home', [HomeController::class, 'managerHome'])->name('manager.home');
 });
 
-// Logout
+// Logout menggunakan POST (disarankan)
 Route::post('/logout', [LogoutController::class, 'signout'])->name('logout');
 
 // =============================
-// Route hanya untuk pengguna yang login
+// Route yang hanya bisa diakses oleh pengguna yang sudah login
 // =============================
 Route::middleware(['auth'])->group(function () {
-    // Produk
+
+    // Resource route produk (CRUD)
     Route::resource('produk', ProdukController::class);
 
-    // Keranjang
-    Route::get('/keranjang', [KeranjangController::class, 'index'])->name('keranjang.index');
-    Route::post('/keranjang/store', [KeranjangController::class, 'store'])->name('keranjang.store');
-    Route::post('/keranjang/update', [KeranjangController::class, 'update'])->name('keranjang.update');
-    Route::post('/keranjang/remove', [KeranjangController::class, 'remove'])->name('keranjang.remove');
-    Route::post('/keranjang/clear', [KeranjangController::class, 'clear'])->name('keranjang.clear');
-    Route::get('/keranjang/checkout', [KeranjangController::class, 'checkout'])->name('keranjang.checkout');
+    // Routes untuk keranjang
+    Route::prefix('keranjang')->name('keranjang.')->group(function () {
+        Route::get('/', [KeranjangController::class, 'index'])->name('index');
+        Route::post('/store', [KeranjangController::class, 'store'])->name('store');
+        Route::post('/update', [KeranjangController::class, 'update'])->name('update');
+        Route::post('/remove', [KeranjangController::class, 'remove'])->name('remove');
+        Route::post('/clear', [KeranjangController::class, 'clear'])->name('clear');
+        Route::get('/checkout', [KeranjangController::class, 'checkout'])->name('checkout');
+    });
 
-    // Transaksi
-    Route::get('/transactions', [TransactionsController::class, 'index'])->name('transactions.index');
-    Route::get('/transactions/history', [TransactionsController::class, 'history'])->name('transactions.history');
-    Route::get('/transactions/print/{id}', [TransactionsController::class, 'print'])->name('transactions.print');
-    Route::get('/transactions/{id}/receipt', [TransactionsController::class, 'printReceipt'])->name('transactions.receipt');
-    Route::put('/transactions/{id}/updatestatus', [TransactionsController::class, 'updateStatus'])->name('transactions.updateStatus');
+    // Routes transaksi
+    Route::prefix('transactions')->name('transactions.')->group(function () {
+        Route::get('/', [TransactionsController::class, 'index'])->name('index');
+        Route::get('/history', [TransactionsController::class, 'history'])->name('history');
+        Route::get('/print/{id}', [TransactionsController::class, 'print'])->name('print');
+        Route::get('/{id}/receipt', [TransactionsController::class, 'printReceipt'])->name('receipt');
+        Route::put('/{id}/updatestatus', [TransactionsController::class, 'updateStatus'])->name('updateStatus');
+    });
 
-    // Kategori (CRUD)
+    // Resource route kategori (CRUD)
     Route::resource('kategori', KategoriController::class);
 
-    
-        // Pesan
-        Route::get('/pesan/create', [PesanController::class, 'create'])->name('pesan.create');
-        Route::post('/pesan', [PesanController::class, 'store'])->name('pesan.store');
-        // Menambahkan route untuk pesan.index
-        Route::get('/pesan', [PesanController::class, 'index'])->name('pesan.index');
+    // Route game store
+    Route::get('/game-store', [ProdukController::class, 'gameStore'])->name('game.store');
+
+    // Routes pesan
+    Route::prefix('pesan')->name('pesan.')->group(function () {
+        Route::get('/', [PesanController::class, 'index'])->name('index');
+        Route::get('/create', [PesanController::class, 'create'])->name('create');
+        Route::post('/', [PesanController::class, 'store'])->name('store');
+    });
 
     // Produk Live Search
     Route::get('/produk/live-search', [ProdukController::class, 'liveSearch'])->name('produk.live-search');
+
 });
