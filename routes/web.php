@@ -75,6 +75,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [PesanController::class, 'index'])->name('index');
         Route::get('/create', [PesanController::class, 'create'])->name('create');
         Route::post('/', [PesanController::class, 'store'])->name('store');
+       Route::get('/produk/{produk}/play', [ProdukController::class, 'playGame'])->name('produk.play');
+
     });
 
     // Produk Live Search

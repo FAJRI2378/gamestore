@@ -5,19 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+// Model Produk
 class Produk extends Model
 {
     use HasFactory;
 
-    // Mass assignment fields
-   protected $fillable = [
-    'user_id', 'kode_produk', 'nama', 'harga', 'kategori_id', 'stok', 'image'
-];
+    protected $fillable = ['kode_produk', 'nama', 'harga', 'kategori_id', 'stok', 'game', 'image', 'user_id'];
 
-
-    // Relasi Many-to-One: Produk memiliki satu Kategori
     public function kategori()
     {
         return $this->belongsTo(Kategori::class, 'kategori_id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

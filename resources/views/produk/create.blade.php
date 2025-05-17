@@ -1,5 +1,3 @@
-@php use Illuminate\Support\Facades\Route; @endphp
-
 @extends('layouts.app')
 
 @section('content')
@@ -8,7 +6,7 @@
         <div class="col-md-8">
             <div class="card shadow-lg">
                 <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">Tambah Produk</h4>
+                    <h4 class="mb-0">Tambah Game</h4>
                 </div>
                 <div class="card-body">
 
@@ -27,25 +25,34 @@
                         {{-- Kode Produk --}}
                         <div class="mb-3">
                             <label for="kode_produk" class="form-label">Kode Produk</label>
-                            <input type="text" name="kode_produk" class="form-control" value="{{ old('kode_produk') }}" required>
+                            <input type="text" name="kode_produk" class="form-control @error('kode_produk') is-invalid @enderror" value="{{ old('kode_produk') }}" required>
+                            @error('kode_produk')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         {{-- Nama Produk --}}
                         <div class="mb-3">
-                            <label for="nama" class="form-label">Nama Produk</label>
-                            <input type="text" name="nama" class="form-control" value="{{ old('nama') }}" required>
+                            <label for="nama" class="form-label">Nama Game</label>
+                            <input type="text" name="nama" class="form-control @error('nama') is-invalid @enderror" value="{{ old('nama') }}" required>
+                            @error('nama')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         {{-- Harga Produk --}}
                         <div class="mb-3">
                             <label for="harga" class="form-label">Harga</label>
-                            <input type="number" name="harga" class="form-control" value="{{ old('harga') }}" required min="0">
+                            <input type="number" name="harga" class="form-control @error('harga') is-invalid @enderror" value="{{ old('harga') }}" required min="0">
+                            @error('harga')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         {{-- Kategori Produk --}}
                         <div class="mb-3">
                             <label for="kategori_id" class="form-label">Kategori</label>
-                            <select name="kategori_id" class="form-select" required>
+                            <select name="kategori_id" class="form-select @error('kategori_id') is-invalid @enderror" required>
                                 <option value="">-- Pilih Kategori --</option>
                                 @foreach($kategoris as $kategori)
                                     <option value="{{ $kategori->id }}" {{ old('kategori_id') == $kategori->id ? 'selected' : '' }}>
@@ -53,28 +60,41 @@
                                     </option>
                                 @endforeach
                             </select>
+                            @error('kategori_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         {{-- Stok Produk --}}
                         <div class="mb-3">
                             <label for="stok" class="form-label">Stok</label>
-                            <input type="number" name="stok" class="form-control" value="{{ old('stok', 0) }}" required min="0">
+                            <input type="number" name="stok" class="form-control @error('stok') is-invalid @enderror" value="{{ old('stok', 0) }}" required min="0">
+                            @error('stok')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
 
-                        {{-- Gambar Produk (Opsional) --}}
+                        {{-- Upload File Game (ZIP) --}}
                         <div class="mb-3">
-                            <label for="image" class="form-label">Gambar Produk (Opsional)</label>
-                            <input type="file" name="image" class="form-control" accept="image/*" onchange="previewImage(event)">
+                            <label for="game" class="form-label">File Game (ZIP)</label>
+                            <input type="file" name="game" class="form-control @error('game') is-invalid @enderror" accept=".zip">
+                            @error('game')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
 
-                        {{-- Preview Gambar --}}
-                        <div class="mb-3" style="display:none;" id="image-preview-container">
-                            <img id="preview-image" src="#" alt="Preview Gambar" width="150" class="img-thumbnail">
+                        {{-- Upload Gambar Thumbnail --}}
+                        <div class="mb-3">
+                            <label for="image" class="form-label">Thumbnail Game (Gambar)</label>
+                            <input type="file" name="image" class="form-control @error('image') is-invalid @enderror" accept="image/*">
+                            @error('image')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         {{-- Tombol Submit --}}
                         <button type="submit" class="btn btn-primary">
-                            <i class="fa fa-plus"></i> Tambah Produk
+                            <i class="fa fa-plus"></i> Tambah Game
                         </button>
 
                         {{-- Tombol Kembali --}}
@@ -86,18 +106,4 @@
         </div>
     </div>
 </div>
-
-<script>
-    // Fungsi pratinjau gambar sebelum diunggah
-    function previewImage(event) {
-        const reader = new FileReader();
-        reader.onload = function () {
-            const preview = document.getElementById('preview-image');
-            const container = document.getElementById('image-preview-container');
-            preview.src = reader.result;
-            container.style.display = 'block';
-        };
-        reader.readAsDataURL(event.target.files[0]);
-    }
-</script>
 @endsection

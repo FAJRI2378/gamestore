@@ -15,9 +15,12 @@ return new class extends Migration
             $table->id();
             $table->string('kode_produk')->unique();
             $table->string('nama');
-            $table->decimal('harga', 10, 2); // Menggunakan decimal untuk harga
-            $table->integer('stok')->default(0); // Kolom stok
-            $table->timestamps();
+            $table->decimal('harga', 10, 2); // Harga dengan 2 digit desimal
+            $table->integer('stok')->default(0); // Jumlah stok produk
+            $table->text('deskripsi')->nullable(); // Deskripsi produk (opsional)
+            $table->string('gambar')->nullable(); // Nama file gambar (opsional)
+            $table->string('game')->nullable(); // Nama file game yang diupload, misal 1747376892_6826dafc2a1fe.zip
+            $table->timestamps(); // created_at & updated_at
         });
     }
 
@@ -26,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('produk');
+        Schema::dropIfExists('produks');
     }
 };

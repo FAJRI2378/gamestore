@@ -28,61 +28,74 @@
                         {{-- Kode Produk --}}
                         <div class="mb-3">
                             <label for="kode_produk" class="form-label">Kode Produk</label>
-                            <input type="text" name="kode_produk" class="form-control" value="{{ $produk->kode_produk }}" required>
+                            <input type="text" name="kode_produk" class="form-control @error('kode_produk') is-invalid @enderror" value="{{ old('kode_produk', $produk->kode_produk) }}" required>
+                            @error('kode_produk')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         {{-- Nama Produk --}}
                         <div class="mb-3">
                             <label for="nama" class="form-label">Nama Produk</label>
-                            <input type="text" name="nama" class="form-control" value="{{ $produk->nama }}" required>
+                            <input type="text" name="nama" class="form-control @error('nama') is-invalid @enderror" value="{{ old('nama', $produk->nama) }}" required>
+                            @error('nama')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         {{-- Harga Produk --}}
                         <div class="mb-3">
                             <label for="harga" class="form-label">Harga</label>
-                            <input type="number" name="harga" class="form-control" value="{{ $produk->harga }}" required min="0">
+                            <input type="number" name="harga" class="form-control @error('harga') is-invalid @enderror" value="{{ old('harga', $produk->harga) }}" required min="0">
+                            @error('harga')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        {{-- Stok Produk --}}
+                        <div class="mb-3">
+                            <label for="stok" class="form-label">Stok</label>
+                            <input type="number" name="stok" id="stok" class="form-control @error('stok') is-invalid @enderror" value="{{ old('stok', $produk->stok) }}" required min="0">
+                            @error('stok')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         {{-- Kategori Produk --}}
                         <div class="mb-3">
-                            <label for="image" class="form-label">Gambar Produk (Opsional)</label>
-                            <input type="file" name="image" class="form-control" accept="image/*">
-                        </div>
-
-                        <div class="mb-3">
                             <label for="kategori_id" class="form-label">Kategori</label>
-                            <select name="kategori_id" class="form-select" required>
+                            <select name="kategori_id" class="form-select @error('kategori_id') is-invalid @enderror" required>
                                 <option value="">-- Pilih Kategori --</option>
                                 @foreach($kategoris as $kategori)
-                                    <option value="{{ $kategori->id }}" {{ $produk->kategori_id == $kategori->id ? 'selected' : '' }}>
-                                        {{ $kategori->name }}
+                                    <option value="{{ $kategori->id }}" {{ old('kategori_id', $produk->kategori_id) == $kategori->id ? 'selected' : '' }}>
+                                        {{ $kategori->nama }}
                                     </option>
                                 @endforeach
                             </select>
+                            @error('kategori_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         {{-- Gambar Produk --}}
                         <div class="mb-3">
-                            <label for="image" class="form-label">Gambar Produk</label>
+                            <label for="image" class="form-label">Gambar Produk (Opsional)</label>
 
-                            <div class="mb-3">
-                                <label for="stok" class="form-label">Stok</label>
-                                <input type="number" name="stok" id="stok" class="form-control" value="{{ $produk->stok }}" required min="0">
-                            </div>
-
-
-                            {{-- Menampilkan gambar produk yang ada --}}
+                            {{-- Tampilkan gambar lama jika ada --}}
                             @if($produk->image)
-                                <div>
-                                    <img id="preview-image" src="{{ asset('storage/public/images_produk/' . $produk->image) }}" alt="Gambar Produk" width="150" class="img-thumbnail">
+                                <div class="mb-3">
+                                    <img id="preview-image" src="{{ asset('storage/images_produk/' . $produk->image) }}" alt="Gambar Produk" width="150" class="img-thumbnail">
                                 </div>
                             @else
                                 <div>Gambar tidak tersedia.</div>
                             @endif
 
-                            {{-- Input untuk mengganti gambar --}}
-                            <input type="file" name="image" class="form-control" accept="image/*" onchange="previewImage(event)">
+                            {{-- Input ganti gambar --}}
+                            <input type="file" name="image" class="form-control @error('image') is-invalid @enderror" accept="image/*" onchange="previewImage(event)">
                             <small class="text-muted">Biarkan kosong jika tidak ingin mengganti gambar.</small>
+                            @error('image')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         {{-- Tombol Submit --}}
@@ -91,7 +104,7 @@
                         </button>
 
                         {{-- Tombol Kembali --}}
-                        <a href="{{ route('admin.home') }}" class="btn btn-secondary">Kembali</a>
+                        <a href="{{ route('produk.index') }}" class="btn btn-secondary">Kembali</a>
                     </form>
 
                 </div>
@@ -106,7 +119,9 @@
         const reader = new FileReader();
         reader.onload = function () {
             const preview = document.getElementById('preview-image');
-            preview.src = reader.result;
+            if (preview) {
+                preview.src = reader.result;
+            }
         };
         reader.readAsDataURL(event.target.files[0]);
     }
