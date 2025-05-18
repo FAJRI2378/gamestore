@@ -1,3 +1,7 @@
+@php
+use Illuminate\Support\Facades\Storage;
+@endphp
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -16,14 +20,6 @@
             height: 200px;
             object-fit: cover;
         }
-        .btn-success {
-            background-color: #28a745;
-            border: none;
-        }
-        .btn-success:hover {
-            background-color: #218838;
-        }
-        /* Optional: modal iframe full size */
         .modal-body iframe {
             width: 100%;
             height: 70vh;
@@ -62,6 +58,14 @@
 
     <div class="row">
         @forelse ($produks as $produk)
+            @php
+                $gameExists = $produk->game && Storage::disk('public')->exists('games_produk/' . $produk->game);
+            @endphp
+
+            @if (!$gameExists)
+                @continue
+            @endif
+
             <div class="col-md-4 mb-4">
                 <div class="card h-100">
                     @if ($produk->image)
@@ -86,11 +90,9 @@
                             </form>
                         @endif
 
-                    <button type="button" class="btn btn-primary w-100 play-btn" data-id="{{ $produk->id }}">
-    <i class="fa fa-play"></i> Play 20 detik
-</button>
-
-
+                        <button type="button" class="btn btn-primary w-100 play-btn" data-id="{{ $produk->id }}" data-file="{{ $produk->game }}">
+                            <i class="fa fa-play"></i> Play 20 detik
+                        </button>
                     </div>
                 </div>
             </div>
@@ -109,7 +111,6 @@
                     </div>
                 </div>
             </div>
-
         @empty
             <p class="text-center">Tidak ada game ditemukan.</p>
         @endforelse
@@ -129,23 +130,20 @@
         playButtons.forEach(button => {
             button.addEventListener('click', function () {
                 const produkId = this.getAttribute('data-id');
+                const gameFile = this.getAttribute('data-file');
                 const modal = new bootstrap.Modal(document.getElementById('playModal-' + produkId));
                 const iframe = document.querySelector('#playModal-' + produkId + ' iframe');
-                const gameUrl = "{{ url('games_extracted') }}/" + produkId + "/index.html";
+                const gameUrl = "{{ url('storage/games_produk') }}/" + gameFile + "/index.html";
 
-                // Set iframe src
                 iframe.src = gameUrl;
-
-                // Show modal
                 modal.show();
 
-                // Set timer to close modal after 20 seconds
+                // Sembunyikan modal dan kosongkan iframe setelah 20 detik
                 setTimeout(() => {
                     modal.hide();
-                    iframe.src = ''; // clear iframe src to stop game
+                    iframe.src = '';
                 }, 20000);
 
-                // Close button event to clear iframe src on manual close
                 const closeBtn = document.querySelector('#playModal-' + produkId + ' .close-btn');
                 closeBtn.addEventListener('click', () => {
                     iframe.src = '';
