@@ -37,13 +37,11 @@ class ProdukController extends Controller
             $produkQuery->where('kategori_id', $request->kategori_id);
         }
 
-        // Jika bukan admin, batasi hanya produk milik user tersebut
         if ($user->role !== 'admin') {
             $produkQuery->where('user_id', $user->id);
         }
 
         $produks = $produkQuery->latest()->paginate(10)->appends($request->only('search', 'kategori_id'));
-
         $view = $user->role === 'admin' ? 'adminhome' : 'home';
 
         return view($view, compact('produks', 'kategoris'));
@@ -80,7 +78,13 @@ class ProdukController extends Controller
             $data['image'] = $this->uploadFile($request->file('image'), 'images_produk');
         }
 
-        Produk::create($data);
+        $produk = Produk::create($data);
+
+       if ($produk->game) {
+    $folderName = $this->extractGameZip($produk, $produk->game);
+    $produk->update(['nama_folder' => $folderName]);
+}
+
 
         return redirect()->route('produk.index')->with('success', 'Game berhasil ditambahkan!');
     }
@@ -94,7 +98,6 @@ class ProdukController extends Controller
         }
 
         $kategoris = Kategori::all();
-
         return view('produk.edit', compact('produk', 'kategoris'));
     }
 
@@ -128,6 +131,12 @@ class ProdukController extends Controller
 
         $produk->update($data);
 
+        if (isset($data['game'])) {
+    $folderName = $this->extractGameZip($produk, $data['game']);
+    $produk->update(['nama_folder' => $folderName]);
+}
+
+
         return redirect()->route('produk.index')->with('success', 'Game berhasil diperbarui!');
     }
 
@@ -157,89 +166,103 @@ class ProdukController extends Controller
         return redirect()->route('produk.index')->with('success', 'Produk berhasil dihapus!');
     }
 
-   public function gameStore(Request $request)
-{
-    $query = Produk::query();
+    public function gameStore(Request $request)
+    {
+        $query = Produk::query();
 
-    // Filter pencarian nama game
-    if ($request->filled('search')) {
-        $query->where('nama', 'like', '%' . $request->search . '%');
+        if ($request->filled('search')) {
+            $query->where('nama', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->filled('kategori_id')) {
+            $query->where('kategori_id', $request->kategori_id);
+        }
+
+        $produks = $query->whereNotNull('game')->latest()->paginate(9)->appends($request->only('search', 'kategori_id'));
+        $kategoris = Kategori::all();
+
+        return view('game-store', compact('produks', 'kategoris'));
     }
-
-    // Filter kategori
-    if ($request->filled('kategori_id')) {
-        $query->where('kategori_id', $request->kategori_id);
-    }
-
-    // Hanya tampilkan produk yang memiliki game dan file game ada di storage
-    $produks = $query->whereNotNull('game')->latest()->paginate(9)->appends($request->only('search', 'kategori_id'));
-
-    // Dapatkan semua kategori untuk dropdown filter
-    $kategoris = Kategori::all();
-
-    return view('game-store', compact('produks', 'kategoris'));
-}
-
 
 public function playGame(Produk $produk)
 {
-    if (!$produk->game || !Storage::exists('public/games_produk/' . $produk->game)) {
-        return redirect()->back()->with('error', 'File game tidak ditemukan.');
+    if (!$produk->game) {
+        return response()->json([
+            'success' => false,
+            'message' => 'File game tidak tersedia.'
+        ]);
     }
 
-    $zipPath = storage_path('app/public/games_produk/' . $produk->game); // File ZIP
-    $extractPath = public_path('games_extracted/' . $produk->id); // Folder tujuan
+    $zipPath = storage_path('app/public/games_produk/' . $produk->game);
 
-    // Hapus jika sebelumnya sudah ada
-    if (File::exists($extractPath)) {
-        File::deleteDirectory($extractPath);
+    if (!file_exists($zipPath)) {
+        return response()->json([
+            'success' => false,
+            'message' => 'File ZIP tidak ditemukan.'
+        ]);
     }
-
-    File::makeDirectory($extractPath, 0755, true);
 
     $zip = new \ZipArchive();
+    $folderName = null;
+
     if ($zip->open($zipPath) === TRUE) {
-        $zip->extractTo($extractPath);
-        $zip->close();
+        $rootFolders = [];
 
-        // Cek apakah index.html langsung ada
-        if (file_exists($extractPath . '/index.html')) {
-            return redirect(asset('games_extracted/' . $produk->id . '/index.html'));
-        }
-
-        // Cek apakah ZIP berisi 1 folder di dalam (seperti "nama_game")
-        $subdirs = array_filter(glob($extractPath . '/*'), 'is_dir');
-        if (count($subdirs) === 1) {
-            $innerFolder = $subdirs[0];
-
-            // Cek apakah ada index.html di dalam folder itu
-            if (file_exists($innerFolder . '/index.html')) {
-                // Salin manual semua isi dari folder itu ke direktori utama
-                $files = File::allFiles($innerFolder);
-                foreach ($files as $file) {
-                    $relativePath = $file->getRelativePathname();
-                    $destPath = $extractPath . '/' . $relativePath;
-
-                    // Buat folder jika belum ada
-                    if (!File::exists(dirname($destPath))) {
-                        File::makeDirectory(dirname($destPath), 0755, true);
-                    }
-
-                    File::copy($file->getRealPath(), $destPath);
-                }
-
-                // Hapus folder dalam ZIP
-                File::deleteDirectory($innerFolder);
-
-                return redirect(asset('games_extracted/' . $produk->id . '/index.html'));
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $stat = $zip->statIndex($i);
+            $fileName = $stat['name'];
+            $parts = explode('/', $fileName);
+            if (count($parts) > 1) {
+                $rootFolders[] = $parts[0];
             }
         }
 
-        return redirect()->back()->with('error', 'File index.html tidak ditemukan setelah unzip.');
+        $zip->close();
+        $rootFolders = array_unique($rootFolders);
+
+        if (count($rootFolders) === 1) {
+            // Gunakan nama folder internal ZIP
+            $folderName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $rootFolders[0]);
+        } else {
+            // Gunakan nama file ZIP tanpa ekstensi
+            $folderName = pathinfo($produk->game, PATHINFO_FILENAME);
+            $folderName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $folderName);
+        }
+    } else {
+        return response()->json([
+            'success' => false,
+            'message' => 'Gagal membuka file ZIP.'
+        ]);
     }
 
-    return redirect()->back()->with('error', 'Gagal membuka file ZIP.');
+    $indexPath = public_path('games_extracted/' . $folderName . '/index.html');
+
+    // Jika belum diekstrak, bisa ekstrak otomatis (opsional)
+    if (!File::exists($indexPath)) {
+        $extractPath = public_path('games_extracted/' . $folderName);
+
+        $zip = new \ZipArchive();
+        if ($zip->open($zipPath) === TRUE) {
+            $zip->extractTo($extractPath);
+            $zip->close();
+        }
+
+        // Cek ulang setelah ekstrak
+        if (!File::exists($indexPath)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'File index.html tidak ditemukan setelah ekstrak.'
+            ]);
+        }
+    }
+
+    return response()->json([
+        'success' => true,
+        'url' => asset('games_extracted/' . $folderName . '/index.html')
+    ]);
 }
+
+
 
     public function liveSearch(Request $request)
     {
@@ -259,40 +282,68 @@ public function playGame(Produk $produk)
         return redirect()->route('produk.index');
     }
 
- private function uploadFile($file, $folder)
+    private function uploadFile($file, $folder)
     {
-        // Simpan file di storage/app/public/$folder dengan nama unik
         $filename = uniqid() . '.' . $file->getClientOriginalExtension();
         $file->storeAs('public/' . $folder, $filename);
         return $filename;
     }
-    
-    public function prepareGame(Produk $produk)
+private function extractGameZip($produk, $filename)
 {
-    if (!$produk->game || !Storage::exists('public/games_produk/' . $produk->game)) {
-        return response()->json(['error' => 'File game tidak ditemukan.'], 404);
-    }
+    $zipPath = storage_path('app/public/games_produk/' . $filename);
+    $folderName = null;
 
-    $zipPath = storage_path('app/public/games_produk/' . $produk->game);
-    $extractPath = public_path('games_extracted/' . $produk->id);
+    $zip = new \ZipArchive();
+    if ($zip->open($zipPath) === TRUE) {
+        $rootFolders = [];
 
-    if (!file_exists($extractPath)) {
-        mkdir($extractPath, 0755, true);
-        $zip = new \ZipArchive();
-        if ($zip->open($zipPath) === TRUE) {
-            $zip->extractTo($extractPath);
-            $zip->close();
-        } else {
-            return response()->json(['error' => 'Tidak dapat mengekstrak file game.'], 500);
+        // Ambil nama folder utama dari dalam ZIP
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $stat = $zip->statIndex($i);
+            $fileName = $stat['name'];
+
+            $parts = explode('/', $fileName);
+            if (count($parts) > 1) {
+                $rootFolders[] = $parts[0];
+            }
         }
-    }
 
-    $indexFile = 'games_extracted/' . $produk->id . '/index.html';
-    if (!file_exists(public_path($indexFile))) {
-        return response()->json(['error' => 'File index.html tidak ditemukan setelah ekstraksi.'], 404);
-    }
+        $rootFolders = array_unique($rootFolders);
 
-    return response()->json(['url' => url($indexFile)]);
+        // Tentukan folderName
+        if (count($rootFolders) === 1) {
+            // Kalau di dalam ZIP sudah ada folder tunggal
+            $folderName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $rootFolders[0]);
+        } else {
+            // Kalau flat atau banyak folder
+            $folderName = pathinfo($filename, PATHINFO_FILENAME);
+        }
+
+        $extractPath = public_path('games_extracted/' . $folderName);
+
+        // Hapus folder lama jika ada
+        if ($produk->nama_folder && File::exists(public_path('games_extracted/' . $produk->nama_folder))) {
+            File::deleteDirectory(public_path('games_extracted/' . $produk->nama_folder));
+        }
+
+        if (File::exists($extractPath)) {
+            File::deleteDirectory($extractPath);
+        }
+
+        File::makeDirectory($extractPath, 0755, true);
+
+        // Kalau isi ZIP hanya 1 folder, ekstrak ke games_extracted langsung
+        if (count($rootFolders) === 1) {
+            // Ekstrak ke games_extracted/
+            $zip->extractTo(public_path('games_extracted'));
+        } else {
+            // Ekstrak ke dalam folder tertentu
+            $zip->extractTo($extractPath);
+        }
+
+        $zip->close();
+        return $folderName;
+    }
 }
 
 }

@@ -90,9 +90,11 @@ use Illuminate\Support\Facades\Storage;
                             </form>
                         @endif
 
-                        <button type="button" class="btn btn-primary w-100 play-btn" data-id="{{ $produk->id }}" data-file="{{ $produk->game }}">
-                            <i class="fa fa-play"></i> Play 20 detik
-                        </button>
+                       <button type="button" class="btn btn-primary w-100 play-btn"
+    data-id="{{ $produk->id }}">
+    <i class="fa fa-play"></i> Play 20 detik
+</button>
+
                     </div>
                 </div>
             </div>
@@ -122,7 +124,6 @@ use Illuminate\Support\Facades\Storage;
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const playButtons = document.querySelectorAll('.play-btn');
@@ -130,24 +131,40 @@ use Illuminate\Support\Facades\Storage;
         playButtons.forEach(button => {
             button.addEventListener('click', function () {
                 const produkId = this.getAttribute('data-id');
-                const gameFile = this.getAttribute('data-file');
-                const modal = new bootstrap.Modal(document.getElementById('playModal-' + produkId));
-                const iframe = document.querySelector('#playModal-' + produkId + ' iframe');
-                const gameUrl = "{{ url('storage/games_produk') }}/" + gameFile + "/index.html";
+                const modalElement = document.getElementById('playModal-' + produkId);
+                const modal = new bootstrap.Modal(modalElement);
+                const iframe = modalElement.querySelector('iframe');
+                const closeBtn = modalElement.querySelector('.close-btn');
 
-                iframe.src = gameUrl;
-                modal.show();
+                // Bersihkan iframe sebelum memuat game baru
+                iframe.src = '';
 
-                // Sembunyikan modal dan kosongkan iframe setelah 20 detik
-                setTimeout(() => {
-                    modal.hide();
-                    iframe.src = '';
-                }, 20000);
+                // Ambil URL game dari server (controller Laravel)
+                fetch(`/pesan/play-game/${produkId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            iframe.src = data.url;
+                            modal.show();
 
-                const closeBtn = document.querySelector('#playModal-' + produkId + ' .close-btn');
-                closeBtn.addEventListener('click', () => {
-                    iframe.src = '';
-                });
+                            // Sembunyikan modal & kosongkan iframe setelah 20 detik
+                            setTimeout(() => {
+                                modal.hide();
+                                iframe.src = '';
+                            }, 20000);
+
+                            // Jika ditutup manual
+                            closeBtn.addEventListener('click', () => {
+                                iframe.src = '';
+                            });
+                        } else {
+                            alert(data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Terjadi kesalahan:', error);
+                        alert('Gagal memuat game.');
+                    });
             });
         });
     });
