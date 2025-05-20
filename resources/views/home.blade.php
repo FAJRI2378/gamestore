@@ -22,11 +22,10 @@
                         </a>
 
                         <a href="{{ route('game.store') }}" class="btn btn-success">
-    <i class="fa fa-gamepad"></i> Game Store
-</a>
-
-
-
+                            <i class="fa fa-gamepad"></i> Game Store
+                        </a>
+                          <a href="{{ route('pesan.user.owned_games') }}">Game Kamu</a>
+                        </a>
                     </div>
                 </div>
 

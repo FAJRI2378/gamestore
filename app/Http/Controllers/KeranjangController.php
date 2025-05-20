@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Produk;
-use App\Models\Transactions;
+use App\Models\Transaction;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 
@@ -24,29 +24,30 @@ class KeranjangController extends Controller
     /**
      * Menambahkan produk ke keranjang belanja
      */
-    public function store(Request $request)
-    {
-        $produk = Produk::findOrFail($request->id);
+  public function store(Request $request)
+{
+    $produk = Produk::findOrFail($request->id);
 
-        $cart = session()->get('cart', []);
+    $cart = session()->get('cart', []);
 
-        if (isset($cart[$produk->id])) {
-            $cart[$produk->id]['quantity']++;
-        } else {
-            $cart[$produk->id] = [
-                "nama" => $produk->nama,
-                "harga" => $produk->harga,
-                "quantity" => 1
-            ];
-        }
-
-        session()->put('cart', $cart);
-
-        return response()->json([
-            'success' => true,
-            'totalItems' => count($cart)
-        ]);
+    if (isset($cart[$produk->id])) {
+        $cart[$produk->id]['quantity']++;
+    } else {
+        $cart[$produk->id] = [
+            "nama" => $produk->nama,
+            "harga" => $produk->harga,
+            "quantity" => 1
+        ];
     }
+
+    session()->put('cart', $cart);
+
+    return response()->json([
+        'success' => true,
+        'totalItems' => count($cart)
+    ]);
+}
+
 
     /**
      * Mengupdate jumlah produk dalam keranjang
@@ -110,7 +111,7 @@ public function checkout()
         $total += $item['harga'] * $item['quantity'];
     }
 
-    $transactions = Transactions::create([
+    $transactions = Transaction::create([
         'user_id' => Auth::id(),
         'items' => json_encode($cart),
         'total_harga' => $total,

@@ -4,8 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
+use App\Models\Produk;
 
-class Transactions extends Model
+class Transaction extends Model
 {
     use HasFactory;
 
@@ -24,5 +26,16 @@ class Transactions extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function getProdukAttribute()
+    {
+        if (!is_array($this->items)) {
+            return collect();
+        }
+
+        $productIds = collect($this->items)->pluck('produk_id')->toArray();
+
+        return Produk::whereIn('id', $productIds)->get();
     }
 }

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Storage;
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         body {
@@ -83,18 +84,15 @@ use Illuminate\Support\Facades\Storage;
                                 Ini produk yang kamu upload sendiri
                             </div>
                         @else
-                            <form action="{{ route('keranjang.store') }}" method="POST" class="mt-auto mb-2">
-                                @csrf
-                                <input type="hidden" name="produk_id" value="{{ $produk->id }}">
-                                <button type="submit" class="btn btn-success w-100">Beli</button>
-                            </form>
+                            <button type="button" class="btn btn-success w-100 beli-btn" data-id="{{ $produk->id }}">
+                                Beli
+                            </button>
+
                         @endif
 
-                       <button type="button" class="btn btn-primary w-100 play-btn"
-    data-id="{{ $produk->id }}">
-    <i class="fa fa-play"></i> Play 20 detik
-</button>
-
+                        <button type="button" class="btn btn-primary w-100 play-btn" data-id="{{ $produk->id }}">
+                            <i class="fa fa-play"></i> coba game
+                        </button>
                     </div>
                 </div>
             </div>
@@ -125,50 +123,97 @@ use Illuminate\Support\Facades\Storage;
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const playButtons = document.querySelectorAll('.play-btn');
+document.addEventListener('DOMContentLoaded', function () {
+    // ========== Play Button ==========
+    const playButtons = document.querySelectorAll('.play-btn');
+    playButtons.forEach(button => {
+        button.addEventListener('click', function () {
+            const produkId = this.getAttribute('data-id');
+            const modalElement = document.getElementById('playModal-' + produkId);
+            const modal = new bootstrap.Modal(modalElement);
+            const iframe = modalElement.querySelector('iframe');
+            const closeBtn = modalElement.querySelector('.close-btn');
 
-        playButtons.forEach(button => {
-            button.addEventListener('click', function () {
-                const produkId = this.getAttribute('data-id');
-                const modalElement = document.getElementById('playModal-' + produkId);
-                const modal = new bootstrap.Modal(modalElement);
-                const iframe = modalElement.querySelector('iframe');
-                const closeBtn = modalElement.querySelector('.close-btn');
+            iframe.src = '';
+            fetch(`/pesan/play-game/${produkId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        iframe.src = data.url;
+                        modal.show();
 
-                // Bersihkan iframe sebelum memuat game baru
-                iframe.src = '';
+                        let timerInterval;
+                        Swal.fire({
+                            title: 'Waktu bermain terbatas!',
+                            html: 'Menutup dalam <b></b> detik.',
+                            timer: 20000,
+                            timerProgressBar: true,
+                            didOpen: () => {
+                                Swal.showLoading();
+                                const b = Swal.getHtmlContainer().querySelector('b');
+                                timerInterval = setInterval(() => {
+                                    b.textContent = Math.ceil(Swal.getTimerLeft() / 1000);
+                                }, 100);
+                            },
+                            willClose: () => {
+                                clearInterval(timerInterval);
+                            }
+                        });
 
-                // Ambil URL game dari server (controller Laravel)
-                fetch(`/pesan/play-game/${produkId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            iframe.src = data.url;
-                            modal.show();
+                        setTimeout(() => {
+                            modal.hide();
+                            iframe.src = '';
+                        }, 20000);
 
-                            // Sembunyikan modal & kosongkan iframe setelah 20 detik
-                            setTimeout(() => {
-                                modal.hide();
-                                iframe.src = '';
-                            }, 20000);
+                        closeBtn.addEventListener('click', () => {
+                            iframe.src = '';
+                        });
+                    } else {
+                        Swal.fire('Gagal', data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Terjadi kesalahan:', error);
+                    Swal.fire('Error', 'Gagal memuat game.', 'error');
+                });
+        });
+    });
 
-                            // Jika ditutup manual
-                            closeBtn.addEventListener('click', () => {
-                                iframe.src = '';
-                            });
-                        } else {
-                            alert(data.message);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Terjadi kesalahan:', error);
-                        alert('Gagal memuat game.');
+    // ========== AJAX Beli ==========
+    const beliButtons = document.querySelectorAll('.beli-btn');
+    beliButtons.forEach(button => {
+        button.addEventListener('click', function () {
+            const produkId = this.getAttribute('data-id');
+
+            fetch("{{ route('keranjang.store') }}", {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ id: produkId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Berhasil!',
+                        text: 'Produk ditambahkan ke keranjang.',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
                     });
+                } else {
+                    Swal.fire('Gagal', 'Tidak bisa menambahkan ke keranjang.', 'error');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                Swal.fire('Error', 'Terjadi kesalahan saat menambahkan ke keranjang.', 'error');
             });
         });
     });
+});
 </script>
-
 </body>
 </html>

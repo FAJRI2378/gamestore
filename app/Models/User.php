@@ -6,10 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use App\Models\Transaction;
 
-/**
- * @property string $role
- */
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
@@ -37,11 +35,16 @@ class User extends Authenticatable
 
     public function pesanMasuk()
     {
-        return $this->hasMany(Pesan::class, 'to_id');  // Relasi dengan pesan masuk
+        return $this->hasMany(Pesan::class, 'to_id');
     }
 
     public function pesanKeluar()
     {
-        return $this->hasMany(Pesan::class, 'from_id');  // Relasi dengan pesan keluar
+        return $this->hasMany(Pesan::class, 'from_id');
+    }
+
+    public function transaksi()
+    {
+        return $this->hasMany(Transaction::class); // <- singular, benar
     }
 }
