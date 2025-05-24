@@ -28,14 +28,15 @@ class Transaction extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function getProdukAttribute()
-    {
-        if (!is_array($this->items)) {
-            return collect();
-        }
-
-        $productIds = collect($this->items)->pluck('produk_id')->toArray();
-
-        return Produk::whereIn('id', $productIds)->get();
+ public function getProdukAttribute()
+{
+    if (!is_array($this->items)) {
+        return collect();
     }
+
+    $productIds = array_keys($this->items); // Ambil kunci produk dari array items
+
+    return Produk::whereIn('id', $productIds)->get();
+}
+
 }

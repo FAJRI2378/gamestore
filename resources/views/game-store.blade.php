@@ -9,41 +9,83 @@ use Illuminate\Support\Facades\Storage;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Game Store</title>
 
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap & Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         body {
-            background-color: #f8f9fa;
+            background-color: #f0f2f5;
+            font-family: 'Poppins', sans-serif;
+        }
+        .card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
         }
         .card-img-top {
             height: 200px;
             object-fit: cover;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+        }
+        .btn-custom {
+            border-radius: 30px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .btn-success:hover {
+            background-color: #28a745;
+        }
+        .btn-primary:hover {
+            background-color: #0d6efd;
+        }
+        .form-control, .form-select {
+            border-radius: 10px;
         }
         .modal-body iframe {
             width: 100%;
             height: 70vh;
             border: none;
         }
+        .kategori-badge {
+            font-size: 0.75rem;
+            background: #e1eaff;
+            color: #0d6efd;
+            padding: 5px 10px;
+            border-radius: 12px;
+        }
+        .product-price {
+            font-weight: 600;
+            font-size: 1.2rem;
+            color: #2c3e50;
+        }
     </style>
 </head>
 <body>
-<div class="container mt-5">
-    <h2 class="mb-4">Game Store</h2>
+<div class="container py-5">
+    <h2 class="mb-4 fw-bold">🕹️ Game Store</h2>
 
-    <a href="{{ url()->previous() }}" class="btn btn-secondary mb-3">
-        <i class="fa fa-arrow-left"></i> Kembali
+    <a href="{{ url()->previous() }}" class="btn btn-outline-secondary mb-4 btn-sm">
+        <i class="fa fa-arrow-left me-1"></i> Kembali
     </a>
 
-    <form method="GET" action="{{ route('game.store') }}" class="mb-4">
-        <div class="row g-2">
-            <div class="col-md-6">
-                <input type="text" name="search" value="{{ request('search') }}" class="form-control" placeholder="Cari game..." />
+    <form method="GET" action="{{ route('game.store') }}" class="mb-5">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <input type="text" name="search" value="{{ request('search') }}" class="form-control" placeholder="🔍 Cari game..." />
             </div>
             <div class="col-md-4">
-                <select name="kategori_id" class="form-control">
-                    <option value="">Semua Kategori</option>
+                <select name="kategori_id" class="form-select">
+                    <option value="">📁 Semua Kategori</option>
                     @foreach ($kategoris as $kategori)
                         <option value="{{ $kategori->id }}" {{ request('kategori_id') == $kategori->id ? 'selected' : '' }}>
                             {{ $kategori->nama }}
@@ -51,8 +93,10 @@ use Illuminate\Support\Facades\Storage;
                     @endforeach
                 </select>
             </div>
-            <div class="col-md-2">
-                <button type="submit" class="btn btn-primary w-100">Cari</button>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100 btn-custom">
+                    Cari
+                </button>
             </div>
         </div>
     </form>
@@ -74,24 +118,23 @@ use Illuminate\Support\Facades\Storage;
                     @endif
                     <div class="card-body d-flex flex-column">
                         <h5 class="card-title">{{ $produk->nama }}</h5>
-                        <p class="card-text">{{ $produk->deskripsi ?? '-' }}</p>
-                        <p class="text-muted mb-1">Kategori: {{ $produk->kategori->nama }}</p>
-                        <p class="text-muted mb-1">Dibuat oleh: {{ $produk->user->name ?? 'Admin' }}</p>
-                        <p class="fw-bold">Rp {{ number_format($produk->harga, 0, ',', '.') }}</p>
+                        <p class="text-muted small mb-2">{{ $produk->deskripsi ?? '-' }}</p>
+                        <span class="kategori-badge mb-2">{{ $produk->kategori->nama }}</span>
+                        <p class="small text-muted">Dibuat oleh: <strong>{{ $produk->user->name ?? 'Admin' }}</strong></p>
+                        <p class="product-price mt-auto">Rp {{ number_format($produk->harga, 0, ',', '.') }}</p>
 
                         @if (auth()->check() && auth()->id() === $produk->user_id)
-                            <div class="alert alert-warning text-center mt-auto mb-2">
+                            <div class="alert alert-warning text-center mt-3">
                                 Ini produk yang kamu upload sendiri
                             </div>
                         @else
-                            <button type="button" class="btn btn-success w-100 beli-btn" data-id="{{ $produk->id }}">
-                                Beli
+                            <button type="button" class="btn btn-success w-100 mt-2 btn-custom beli-btn" data-id="{{ $produk->id }}">
+                                <i class="fa fa-cart-plus me-1"></i> Beli
                             </button>
-
                         @endif
 
-                        <button type="button" class="btn btn-primary w-100 play-btn" data-id="{{ $produk->id }}">
-                            <i class="fa fa-play"></i> coba game
+                        <button type="button" class="btn btn-outline-primary w-100 mt-2 btn-custom play-btn" data-id="{{ $produk->id }}">
+                            <i class="fa fa-play me-1"></i> Coba Game
                         </button>
                     </div>
                 </div>
@@ -112,23 +155,23 @@ use Illuminate\Support\Facades\Storage;
                 </div>
             </div>
         @empty
-            <p class="text-center">Tidak ada game ditemukan.</p>
+            <p class="text-center fs-5 mt-5">🚫 Tidak ada game ditemukan.</p>
         @endforelse
     </div>
 
-    <div class="d-flex justify-content-center">
+    <div class="d-flex justify-content-center mt-4">
         {{ $produks->links() }}
     </div>
 </div>
 
+<!-- JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    // ========== Play Button ==========
-    const playButtons = document.querySelectorAll('.play-btn');
-    playButtons.forEach(button => {
+    // Play button
+    document.querySelectorAll('.play-btn').forEach(button => {
         button.addEventListener('click', function () {
-            const produkId = this.getAttribute('data-id');
+            const produkId = this.dataset.id;
             const modalElement = document.getElementById('playModal-' + produkId);
             const modal = new bootstrap.Modal(modalElement);
             const iframe = modalElement.querySelector('iframe');
@@ -172,18 +215,16 @@ document.addEventListener('DOMContentLoaded', function () {
                         Swal.fire('Gagal', data.message, 'error');
                     }
                 })
-                .catch(error => {
-                    console.error('Terjadi kesalahan:', error);
+                .catch(() => {
                     Swal.fire('Error', 'Gagal memuat game.', 'error');
                 });
         });
     });
 
-    // ========== AJAX Beli ==========
-    const beliButtons = document.querySelectorAll('.beli-btn');
-    beliButtons.forEach(button => {
+    // Beli button
+    document.querySelectorAll('.beli-btn').forEach(button => {
         button.addEventListener('click', function () {
-            const produkId = this.getAttribute('data-id');
+            const produkId = this.dataset.id;
 
             fetch("{{ route('keranjang.store') }}", {
                 method: "POST",
@@ -207,8 +248,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     Swal.fire('Gagal', 'Tidak bisa menambahkan ke keranjang.', 'error');
                 }
             })
-            .catch(err => {
-                console.error(err);
+            .catch(() => {
                 Swal.fire('Error', 'Terjadi kesalahan saat menambahkan ke keranjang.', 'error');
             });
         });
