@@ -22,10 +22,7 @@
             @foreach($ownedGames as $produk)
                 <div class="col-md-4 mb-4">
                     <div class="card h-100">
-                        <img src="{{ $produk->image ? asset('storage/images_produk/' . $produk->image) : asset('default-image.png') }}"
-                             class="card-img-top"
-                             alt="{{ $produk->nama }}"
-                             style="height: 200px; object-fit: cover;" />
+                       
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title">{{ $produk->nama }}</h5>
                             <p class="card-text">{{ $produk->deskripsi ?? '-' }}</p>
@@ -44,7 +41,7 @@
                         <div class="modal-content" style="height: 80vh;">
                             <div class="modal-header">
                                 <h5 class="modal-title" id="playModalLabel-{{ $produk->id }}">{{ $produk->nama }}</h5>
-                                <button type="button" class="btn-close close-btn" data-bs-dismiss="modal" aria-label="Close"></button>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body p-0">
                                 <iframe src="" frameborder="0" allowfullscreen style="width: 100%; height: 100%;"></iframe>
@@ -62,15 +59,19 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const playButtons = document.querySelectorAll('.play-btn');
+
     playButtons.forEach(button => {
         button.addEventListener('click', function () {
             const produkId = this.getAttribute('data-id');
             const modalElement = document.getElementById('playModal-' + produkId);
-            const modal = new bootstrap.Modal(modalElement);
             const iframe = modalElement.querySelector('iframe');
-            const closeBtn = modalElement.querySelector('.close-btn');
 
+            // Buat instance modal bootstrap
+            const modal = new bootstrap.Modal(modalElement);
+
+            // Reset iframe src dulu agar loading ulang
             iframe.src = '';
+
             fetch(`/pesan/play-game/${produkId}`)
                 .then(response => response.json())
                 .then(data => {
@@ -85,10 +86,6 @@ document.addEventListener('DOMContentLoaded', function () {
                             timer: 1500,
                             showConfirmButton: false
                         });
-
-                        closeBtn.addEventListener('click', () => {
-                            iframe.src = '';
-                        });
                     } else {
                         Swal.fire('Gagal', data.message, 'error');
                     }
@@ -97,6 +94,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     console.error('Terjadi kesalahan:', error);
                     Swal.fire('Error', 'Gagal memuat game.', 'error');
                 });
+
+            // Bersihkan iframe src saat modal tertutup untuk hentikan game
+            modalElement.addEventListener('hidden.bs.modal', function () {
+                iframe.src = '';
+            }, { once: true });
         });
     });
 });

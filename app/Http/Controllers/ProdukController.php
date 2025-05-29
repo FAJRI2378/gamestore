@@ -285,72 +285,73 @@ class ProdukController extends Controller
         return $filename;
     }
 
-    private function extractGameZip($produk, $filename)
-    {
-        $zipPath = storage_path('app/public/games_produk/' . $filename);
-        $folderName = null;
+  private function extractGameZip($produk, $filename)
+{
+    $zipPath = storage_path('app/public/games_produk/' . $filename);
+    $folderName = null;
 
-        $zip = new \ZipArchive();
-        if ($zip->open($zipPath) === TRUE) {
-            $rootFolders = [];
+    $zip = new \ZipArchive();
+    if ($zip->open($zipPath) === TRUE) {
+        $rootFolders = [];
 
-            // Ambil nama folder utama dari dalam ZIP
-            for ($i = 0; $i < $zip->numFiles; $i++) {
-                $stat = $zip->statIndex($i);
-                $fileName = $stat['name'];
+        // Ambil nama folder utama dari dalam ZIP
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $stat = $zip->statIndex($i);
+            $fileName = $stat['name'];
 
-                $parts = explode('/', $fileName);
-                if (count($parts) > 1) {
-                    $rootFolders[] = $parts[0];
-                }
+            $parts = explode('/', $fileName);
+            if (count($parts) > 1) {
+                $rootFolders[] = $parts[0];
             }
-
-            $rootFolders = array_unique($rootFolders);
-
-            // Tentukan folderName
-            if (count($rootFolders) === 1) {
-                // Kalau di dalam ZIP sudah ada folder tunggal
-                $folderName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $rootFolders[0]);
-            } else {
-                // Kalau flat atau banyak folder
-                $folderName = pathinfo($filename, PATHINFO_FILENAME);
-                $folderName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $folderName);
-            }
-
-            $extractPath = public_path('games_extracted/' . $folderName);
-
-            // Hapus folder lama jika ada
-            if ($produk->nama_folder && File::exists(public_path('games_extracted/' . $produk->nama_folder))) {
-                File::deleteDirectory(public_path('games_extracted/' . $produk->nama_folder));
-            }
-
-            if (File::exists($extractPath)) {
-                File::deleteDirectory($extractPath);
-            }
-
-            File::makeDirectory($extractPath, 0755, true);
-
-            // Kalau isi ZIP hanya 1 folder, ekstrak ke games_extracted langsung
-            if (count($rootFolders) === 1) {
-                // Ekstrak ke games_extracted/
-                $zip->extractTo(public_path('games_extracted'));
-            } else {
-                // Ekstrak ke dalam folder tertentu
-                $zip->extractTo($extractPath);
-            }
-
-            $zip->close();
-            return $folderName;
         }
 
-        return null;
+        $rootFolders = array_unique($rootFolders);
+
+        // Tentukan nama folder hasil ekstrak
+        if (count($rootFolders) === 1) {
+            $folderName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $rootFolders[0]);
+        } else {
+            $folderName = preg_replace('/[^A-Za-z0-9_\-]/', '_', pathinfo($filename, PATHINFO_FILENAME));
+        }
+
+        $extractPath = public_path('games_extracted/' . $folderName);
+
+        // Hapus folder lama jika ada
+        if ($produk->nama_folder && File::exists(public_path('games_extracted/' . $produk->nama_folder))) {
+            File::deleteDirectory(public_path('games_extracted/' . $produk->nama_folder));
+        }
+
+        if (File::exists($extractPath)) {
+            File::deleteDirectory($extractPath);
+        }
+
+        File::makeDirectory($extractPath, 0755, true);
+
+        // Ekstrak ZIP
+        $success = $zip->extractTo($extractPath);
+
+        $zip->close();
+
+        if (!$success) {
+            // Hapus jika gagal ekstrak
+            File::deleteDirectory($extractPath);
+            return null;
+        }
+
+        return $folderName;
     }
 
- public function ownedGames()
+    return null;
+}
+public function ownedGames()
 {
-    /** @var \App\Models\User $user */
     $user = Auth::user();
 
+    if (!$user) {
+        return redirect()->route('login');
+    }
+
+    // Ambil semua transaksi user dengan status 'success'
     $transactions = $user->transaksi()
         ->where('status', 'success')
         ->get();
@@ -358,11 +359,34 @@ class ProdukController extends Controller
     $ownedGames = collect();
 
     foreach ($transactions as $transaksi) {
-        $ownedGames = $ownedGames->merge($transaksi->produk);
+        $items = $transaksi->items;
+
+        if (is_string($items)) {
+            $items = json_decode($items, true);
+        }
+
+        if (is_array($items)) {
+            foreach ($items as $id => $detailProduk) {
+                // Buat object produk dengan properti id dan isi detail produk
+                $produkObj = (object) array_merge(['id' => $id], $detailProduk);
+
+                // Tambah properti image_url dengan cek file gambar ada/tidak
+                $imagePath = 'public/images_produk/' . ($produkObj->image ?? '');
+                if (!empty($produkObj->image) && \Storage::exists($imagePath)) {
+                    $produkObj->image_url = asset('storage/images_produk/' . $produkObj->image);
+                } else {
+                    $produkObj->image_url = asset('default-image.png');
+                }
+
+                $ownedGames->push($produkObj);
+            }
+        }
     }
 
+    // Buang duplikat berdasarkan id produk
     $ownedGames = $ownedGames->unique('id')->values();
 
+    // Cek apakah user memiliki transaksi yang dibatalkan
     $cancelled = $user->transaksi()->where('status', 'cancelled')->exists();
 
     return view('user.owned_games', compact('ownedGames', 'cancelled'));
