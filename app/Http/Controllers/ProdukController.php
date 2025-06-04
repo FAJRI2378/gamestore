@@ -372,7 +372,7 @@ public function ownedGames()
 
                 // Tambah properti image_url dengan cek file gambar ada/tidak
                 $imagePath = 'public/images_produk/' . ($produkObj->image ?? '');
-                if (!empty($produkObj->image) && \Storage::exists($imagePath)) {
+                if (!empty($produkObj->image) && Storage::exists($imagePath)) {
                     $produkObj->image_url = asset('storage/images_produk/' . $produkObj->image);
                 } else {
                     $produkObj->image_url = asset('default-image.png');
@@ -383,7 +383,6 @@ public function ownedGames()
         }
     }
 
-    // Buang duplikat berdasarkan id produk
     $ownedGames = $ownedGames->unique('id')->values();
 
     // Cek apakah user memiliki transaksi yang dibatalkan
