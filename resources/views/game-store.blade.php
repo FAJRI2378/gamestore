@@ -187,30 +187,38 @@ document.addEventListener('DOMContentLoaded', function () {
 
                         let timerInterval;
                         Swal.fire({
-                            title: 'Waktu bermain terbatas!',
-                            html: 'Menutup dalam <b></b> detik.',
-                            timer: 20000,
-                            timerProgressBar: true,
-                            didOpen: () => {
-                                Swal.showLoading();
-                                const b = Swal.getHtmlContainer().querySelector('b');
-                                timerInterval = setInterval(() => {
-                                    b.textContent = Math.ceil(Swal.getTimerLeft() / 1000);
-                                }, 100);
-                            },
-                            willClose: () => {
-                                clearInterval(timerInterval);
-                            }
-                        });
+    title: 'Waktu bermain terbatas!',
+    html: 'Menutup dalam <b></b> detik.',
+    timer: 120000,
+    timerProgressBar: true,
+    didOpen: () => {
+        Swal.showLoading();
+        const b = Swal.getHtmlContainer().querySelector('b');
+        timerInterval = setInterval(() => {
+            b.textContent = Math.ceil(Swal.getTimerLeft() / 1000);
+        }, 100);
+    },
+    willClose: () => {
+        clearInterval(timerInterval);
+    }
+});
 
-                        setTimeout(() => {
-                            modal.hide();
-                            iframe.src = '';
-                        }, 20000);
+setTimeout(() => {
+    modal.hide();
+    iframe.src = '';
+    stopCountdown();
+}, 120000);
+
+startCountdown(120);
+
+
+
 
                         closeBtn.addEventListener('click', () => {
-                            iframe.src = '';
-                        });
+    iframe.src = '';
+    stopCountdown();
+});
+
                     } else {
                         Swal.fire('Gagal', data.message, 'error');
                     }
@@ -254,6 +262,50 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 });
+
+let countdownInterval;
+function startCountdown(duration) {
+    const timeRemainingEl = document.getElementById('time-remaining');
+    const countdownEl = document.getElementById('countdown');
+    let timeLeft = duration;
+
+    countdownEl.textContent = timeLeft;
+    timeRemainingEl.style.display = 'block';
+
+    countdownInterval = setInterval(() => {
+        timeLeft--;
+        countdownEl.textContent = timeLeft;
+        if (timeLeft <= 0) {
+            clearInterval(countdownInterval);
+            timeRemainingEl.style.display = 'none';
+        }
+    }, 1000);
+}
+
+function stopCountdown() {
+    clearInterval(countdownInterval);
+    document.getElementById('time-remaining').style.display = 'none';
+}
+
+
 </script>
+
+<!-- Waktu sisa bermain -->
+<div id="time-remaining" style="
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #343a40;
+    color: #fff;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-weight: bold;
+    z-index: 9999;
+    display: none;
+    font-size: 14px;
+">
+    Sisa waktu: <span id="countdown">120</span> detik
+</div>
+
 </body>
 </html>
