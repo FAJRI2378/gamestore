@@ -1,4 +1,4 @@
-<?phpw
+<?php
 
 namespace App\Http\Controllers;
 

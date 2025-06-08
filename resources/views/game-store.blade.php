@@ -188,7 +188,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         let timerInterval;
                         Swal.fire({
     title: 'Waktu bermain terbatas!',
-    html: 'Menutup dalam <b></b> detik.',
+    html: 'Menutup dalam <b></b> detik.Tap Dimana Saja Agar Kamu Bisa Mencoba',
     timer: 120000,
     timerProgressBar: true,
     didOpen: () => {
